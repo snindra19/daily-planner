@@ -119,8 +119,13 @@ def undo(db: Session, log_id: int) -> ActivityLog:
             rule.status = "archived"
     option_ids = [o.get("id") for o in change.get("options", [])]
     record_decision(
-        db, row.date, change.get("kind", "auto"), change.get("context", {}),
-        option_ids, change.get("option"), "undone",
-    )  # fmt: skip
+        db,
+        row.date,
+        change.get("kind", "auto"),
+        change.get("context", {}),
+        option_ids,
+        change.get("option"),
+        "undone",
+    )
     db.commit()
     return row

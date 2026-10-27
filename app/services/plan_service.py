@@ -248,8 +248,9 @@ def compute_plan(
         )
     except RuleCycleError as error:
         empty = PlanResult(date=iso, wake=0)
-        return PlanView(empty, calendar=status, mode=mode, wake=wake, wake_level=level,
-                        error=str(error))  # fmt: skip
+        return PlanView(
+            empty, calendar=status, mode=mode, wake=wake, wake_level=level, error=str(error)
+        )
     _sync_approvals(db, iso, result, llm)
     _log_auto_changes(db, iso, result, fingerprint)
     diff, last_diff = _save_snapshot(db, iso, result)

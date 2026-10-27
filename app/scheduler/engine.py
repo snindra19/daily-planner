@@ -84,9 +84,19 @@ def build_plan(
 ) -> PlanResult:
     """Build one day's plan. The same inputs always give the same output."""
     inputs = Inputs(
-        date, rules, commitments, food_options, quotas, quota_history, calendar_events,
-        day_overrides, item_status, standing_approvals, approved_decisions, profile,
-    )  # fmt: skip
+        date,
+        rules,
+        commitments,
+        food_options,
+        quotas,
+        quota_history,
+        calendar_events,
+        day_overrides,
+        item_status,
+        standing_approvals,
+        approved_decisions,
+        profile,
+    )
     wake = _minutes(wake_time)
     overrides: dict[str, tuple[int, int]] = {}
     pinned: dict[str, str] = {}
@@ -544,9 +554,16 @@ class _Planner:
             self.overrides.pop(key, None)
             meta = self.meta.get(key, _Meta())
             self._emit(
-                key, placed["label"], placed["start"], placed["end"], "meal", 3,
-                status=meta.status, silent=placed["silent"], proposal_key=meta.proposal_key,
-            )  # fmt: skip
+                key,
+                placed["label"],
+                placed["start"],
+                placed["end"],
+                "meal",
+                3,
+                status=meta.status,
+                silent=placed["silent"],
+                proposal_key=meta.proposal_key,
+            )
             self.day.occupy(placed["start"], placed["end"])
 
     def _gap_ok(self, medicine: IdealItem, when: int) -> bool:
@@ -597,8 +614,13 @@ class _Planner:
             if self._resolve(proposal) is None:
                 rejected.add(later.key)
                 self.dropped.add(later.key)
-                self._unslot(later.key, later.label, duration, f"{later.label} needs a new time.",
-                             [f"Take {later.label} at {to_hhmm(target)} or later", "Skip this dose"])  # fmt: skip
+                self._unslot(
+                    later.key,
+                    later.label,
+                    duration,
+                    f"{later.label} needs a new time.",
+                    [f"Take {later.label} at {to_hhmm(target)} or later", "Skip this dose"],
+                )
                 continue
             self.overrides[later.key] = (target, target + duration)
             self.meta[later.key] = self._meta_for(proposal)
@@ -649,8 +671,13 @@ class _Planner:
             return
         options = self._meal_options(meal, start, duration, latest, constraint)
         if not options:
-            self._unslot(meal.key, meal.label, duration, _could_not_fit(meal.label, duration),
-                         ["Shorten it", f"Replace {meal.label} with a snack", "Skip it"])  # fmt: skip
+            self._unslot(
+                meal.key,
+                meal.label,
+                duration,
+                _could_not_fit(meal.label, duration),
+                ["Shorten it", f"Replace {meal.label} with a snack", "Skip it"],
+            )
             return
         proposal = Proposal(
             key=f"move:{meal.key}",
@@ -664,8 +691,13 @@ class _Planner:
         )
         chosen = self._resolve(proposal)
         if chosen is None:
-            self._unslot(meal.key, meal.label, duration, f"{meal.label} needs a new time.",
-                         ["Pick a new time", "Skip it"])  # fmt: skip
+            self._unslot(
+                meal.key,
+                meal.label,
+                duration,
+                f"{meal.label} needs a new time.",
+                ["Pick a new time", "Skip it"],
+            )
             return
         placed = chosen.placements[meal.key]
         self.meta[meal.key] = self._meta_for(proposal, label=placed["label"])
@@ -687,8 +719,11 @@ class _Planner:
             minutes = food.duration_minutes if food else 15
             slot = self.day.next_free(start, minutes, latest)
             if slot is not None:
-                options.append(_placement_option(
-                    "substitute", meal.key, constraint.substitute_label, slot, minutes))  # fmt: skip
+                options.append(
+                    _placement_option(
+                        "substitute", meal.key, constraint.substitute_label, slot, minutes
+                    )
+                )
         slot = self.day.next_free(start, duration, latest)
         if slot is not None:
             options.append(_placement_option("nearest_slot", meal.key, meal.label, slot, duration))
@@ -715,8 +750,13 @@ class _Planner:
         at_home = _wants_home(item.rule, self.inp.profile)
         slot = self.day.next_free(item.start, duration, self.sleep, at_home)
         if slot is None:
-            self._unslot(item.key, item.label, duration, _could_not_fit(item.label, duration),
-                         ["Shorten it", "Move it to another day", "Skip it"])  # fmt: skip
+            self._unslot(
+                item.key,
+                item.label,
+                duration,
+                _could_not_fit(item.label, duration),
+                ["Shorten it", "Move it to another day", "Skip it"],
+            )
             return
         option = _placement_option("nearest_slot", item.key, item.label, slot, duration)
         proposal = Proposal(
@@ -729,8 +769,13 @@ class _Planner:
             context={"kind": "move", "category": item.rule.category},
         )
         if self._resolve(proposal) is None:
-            self._unslot(item.key, item.label, duration, f"{item.label} needs a new time.",
-                         ["Pick a new time", "Skip it"])  # fmt: skip
+            self._unslot(
+                item.key,
+                item.label,
+                duration,
+                f"{item.label} needs a new time.",
+                ["Pick a new time", "Skip it"],
+            )
             return
         self.meta[item.key] = self._meta_for(proposal)
         self._emit_ideal(item, slot)
@@ -756,24 +801,28 @@ class _Planner:
         options: list[Option] = []
         if item.rule.allowed_during_busy:
             food = " with something small" if getattr(item.rule, "requires_food", False) else ""
-            options.append(Option(
-                id="during",
-                label=f"Take {item.label} during {block.label}{food} at {to_hhmm(item.start)}",
-                score=self.weights.get("during_busy", 60),
-                breakdown={"during_busy": self.weights.get("during_busy", 60)},
-                placements={item.key: {"start": item.start, "end": item.end, "silent": True}},
-            ))  # fmt: skip
+            options.append(
+                Option(
+                    id="during",
+                    label=f"Take {item.label} during {block.label}{food} at {to_hhmm(item.start)}",
+                    score=self.weights.get("during_busy", 60),
+                    breakdown={"during_busy": self.weights.get("during_busy", 60)},
+                    placements={item.key: {"start": item.start, "end": item.end, "silent": True}},
+                )
+            )
         after = block.end
         while (next_block := self.day.block_at(after, after + duration)) is not None:
             after = next_block.end
         delay = after - item.start
-        options.append(Option(
-            id="after",
-            label=f"Take {item.label} right after {block.label} at {to_hhmm(after)}",
-            score=delay * self.weights.get("per_minute_delay", 1),
-            breakdown={"delay": delay * self.weights.get("per_minute_delay", 1)},
-            placements={item.key: {"start": after, "end": after + duration, "silent": False}},
-        ))  # fmt: skip
+        options.append(
+            Option(
+                id="after",
+                label=f"Take {item.label} right after {block.label} at {to_hhmm(after)}",
+                score=delay * self.weights.get("per_minute_delay", 1),
+                breakdown={"delay": delay * self.weights.get("per_minute_delay", 1)},
+                placements={item.key: {"start": after, "end": after + duration, "silent": False}},
+            )
+        )
         options.sort(key=lambda o: (o.score, o.placements[item.key]["start"], o.id))
         proposal = Proposal(
             key=f"busy:{item.key}",
@@ -816,9 +865,13 @@ class _Planner:
             at_home = _wants_home(rule, self.inp.profile)
             slot = self.day.next_free(self.earliest, rule.duration_minutes, latest, at_home)
             if slot is None:
-                self._unslot(rule.id, rule.label, rule.duration_minutes,
-                             _could_not_fit(rule.label, rule.duration_minutes),
-                             ["Shorten it", "Move it to another day", "Skip it"])  # fmt: skip
+                self._unslot(
+                    rule.id,
+                    rule.label,
+                    rule.duration_minutes,
+                    _could_not_fit(rule.label, rule.duration_minutes),
+                    ["Shorten it", "Move it to another day", "Skip it"],
+                )
                 continue
             self._emit_rule(rule, slot)
 
@@ -845,9 +898,11 @@ class _Planner:
 
     def _overflow_slot(self, rule: EventRule, cursor: int) -> int | None:
         slot = self.day.next_free(
-            cursor, rule.duration_minutes, self.sleep + rule.duration_minutes,
+            cursor,
+            rule.duration_minutes,
+            self.sleep + rule.duration_minutes,
             _wants_home(rule, self.inp.profile),
-        )  # fmt: skip
+        )
         return slot if slot is not None and slot < self.sleep else None
 
     def _flexible_rules(self) -> list[tuple[EventRule, bool]]:
@@ -921,12 +976,22 @@ class _Planner:
         options: list[Option] = []
         fit = self.sleep - item.start
         if fit >= MIN_SHORTENED_MINUTES:
-            options.append(Option(id="shorten", label=f"Shorten {item.label} to {fit} minutes",
-                                  placements={item.key: {"start": item.start, "end": self.sleep}}))  # fmt: skip
+            options.append(
+                Option(
+                    id="shorten",
+                    label=f"Shorten {item.label} to {fit} minutes",
+                    placements={item.key: {"start": item.start, "end": self.sleep}},
+                )
+            )
         slot = self.day.next_free(self.earliest, duration, self.sleep)
         if slot is not None:
-            options.append(Option(id="move", label=f"Move {item.label} to {to_hhmm(slot)}",
-                                  placements={item.key: {"start": slot, "end": slot + duration}}))  # fmt: skip
+            options.append(
+                Option(
+                    id="move",
+                    label=f"Move {item.label} to {to_hhmm(slot)}",
+                    placements={item.key: {"start": slot, "end": slot + duration}},
+                )
+            )
         if find_quota(item.label, self.inp.quotas):
             options.append(Option(id="use_quota_miss", label=f"Use a quota miss for {item.label}"))
         if not options:
@@ -999,9 +1064,15 @@ class _Planner:
 
     def _emit_rule(self, rule: EventRule, start: int, promoted: bool = False) -> None:
         self._emit(
-            rule.id, rule.label, start, start + rule.duration_minutes, rule.category,
-            TIERS.get(rule.category, 5), rule_id=rule.id, promoted=promoted,
-        )  # fmt: skip
+            rule.id,
+            rule.label,
+            start,
+            start + rule.duration_minutes,
+            rule.category,
+            TIERS.get(rule.category, 5),
+            rule_id=rule.id,
+            promoted=promoted,
+        )
         self.day.occupy(start, start + rule.duration_minutes)
 
     def _emit_ideal(
@@ -1011,10 +1082,17 @@ class _Planner:
         minutes = (item.end - item.start) if duration is None else duration
         meta = self.meta.get(item.key, _Meta())
         self._emit(
-            item.key, meta.label or item.label, begin, begin + minutes, item.rule.category,
-            TIERS.get(item.rule.category, 5), status=meta.status, silent=meta.silent,
-            proposal_key=meta.proposal_key, rule_id=item.rule.id,
-        )  # fmt: skip
+            item.key,
+            meta.label or item.label,
+            begin,
+            begin + minutes,
+            item.rule.category,
+            TIERS.get(item.rule.category, 5),
+            status=meta.status,
+            silent=meta.silent,
+            proposal_key=meta.proposal_key,
+            rule_id=item.rule.id,
+        )
         self.day.occupy(begin, begin + minutes)
 
     def _emit(
@@ -1036,7 +1114,7 @@ class _Planner:
                 duration_minutes=minutes,
                 message=message,
                 recommendations=recommendations,
-            )  # fmt: skip
+            )
         )
 
     # Steps 10 to 12: finish

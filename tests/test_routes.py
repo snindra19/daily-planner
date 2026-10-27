@@ -39,8 +39,9 @@ def client(session: Session) -> Iterator[TestClient]:
 
 
 def add_rule(db: Session, payload: dict) -> Rule:
-    rule = Rule(raw_text=payload.get("label", ""), payload=payload, kind=payload["type"],
-                status="confirmed")  # fmt: skip
+    rule = Rule(
+        raw_text=payload.get("label", ""), payload=payload, kind=payload["type"], status="confirmed"
+    )
     db.add(rule)
     db.commit()
     return rule
@@ -81,9 +82,10 @@ def test_wake_entry_recomputes_and_shows_the_diff(client: TestClient, session: S
     add_rule(session, BREAKFAST)
     client.get("/")
     response = client.post(
-        "/wake", data={"date": "2026-11-02", "kind": "actual", "time": "06:30"},
+        "/wake",
+        data={"date": "2026-11-02", "kind": "actual", "time": "06:30"},
         headers={"referer": "http://test/"},
-    )  # fmt: skip
+    )
     assert response.status_code == 200
     assert "07:30" in response.text
     assert "What changed" in response.text
@@ -91,11 +93,17 @@ def test_wake_entry_recomputes_and_shows_the_diff(client: TestClient, session: S
 
 def test_merged_row_key_with_hash_can_be_marked_done(client: TestClient, session: Session) -> None:
     add_rule(session, BREAKFAST)
-    add_rule(session, {
-        "type": "series", "id": "drops", "label": "Drops", "category": "medicine",
-        "anchor": {"ref": "event", "id": "breakfast"},
-        "recurrence": {"interval_minutes": 60, "count": 1},
-    })  # fmt: skip
+    add_rule(
+        session,
+        {
+            "type": "series",
+            "id": "drops",
+            "label": "Drops",
+            "category": "medicine",
+            "anchor": {"ref": "event", "id": "breakfast"},
+            "recurrence": {"interval_minutes": 60, "count": 1},
+        },
+    )
     assert "Drops 1/1" in client.get("/").text
     response = client.post("/items/drops%231/status", data={"date": "2026-11-02", "status": "done"})
     assert response.status_code == 200
@@ -137,8 +145,16 @@ def test_mode_switch_and_priorities_are_saved(client: TestClient) -> None:
 
 
 def test_add_commitment_and_food(client: TestClient) -> None:
-    client.post("/commitments", data={"label": "Class", "days": "0", "start": "10:00",
-                                      "end": "14:00", "commute_minutes": 35})  # fmt: skip
+    client.post(
+        "/commitments",
+        data={
+            "label": "Class",
+            "days": "0",
+            "start": "10:00",
+            "end": "14:00",
+            "commute_minutes": 35,
+        },
+    )
     client.post("/foods", data={"label": "Apple", "duration_minutes": 1})
     page = client.get("/profile").text
     assert "Class: 0, 10:00 to 14:00" in page
@@ -148,8 +164,16 @@ def test_add_commitment_and_food(client: TestClient) -> None:
 
 def test_delete_warns_about_dependents(client: TestClient, session: Session) -> None:
     breakfast = add_rule(session, BREAKFAST)
-    add_rule(session, {"type": "event", "id": "pill", "label": "Pill", "category": "medicine",
-                       "anchor": {"ref": "event", "id": "breakfast"}})  # fmt: skip
+    add_rule(
+        session,
+        {
+            "type": "event",
+            "id": "pill",
+            "label": "Pill",
+            "category": "medicine",
+            "anchor": {"ref": "event", "id": "breakfast"},
+        },
+    )
     response = client.delete(f"/rules/{breakfast.id}")
     assert "Pill" in response.headers["HX-Redirect"].replace("%20", " ")
     assert session.get(Rule, breakfast.id).status == "confirmed"

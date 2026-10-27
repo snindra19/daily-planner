@@ -36,50 +36,101 @@ P1_PARSE = {
             "payload": {
                 "type": "profile_setting",
                 "default_wake_by_weekday": {
-                    "0": "07:00", "1": "07:00", "2": "07:00", "3": "07:00", "4": "07:00",
-                    "5": "09:00", "6": "09:00",
+                    "0": "07:00",
+                    "1": "07:00",
+                    "2": "07:00",
+                    "3": "07:00",
+                    "4": "07:00",
+                    "5": "09:00",
+                    "6": "09:00",
                 },
             },
             "raw_text": "wake up 7 weekdays, 9 weekends",
         },
-        event("breakfast", "Breakfast", "meal", **WAKE_PLUS, offset_minutes=60,
-              duration_minutes=20, skippable=True),
-        event("lunch", "Lunch", "meal", anchor={"ref": "event", "id": "breakfast"},
-              offset_minutes=240, duration_minutes=30, skippable=True),
-        event("dinner", "Dinner", "meal", anchor={"ref": "absolute", "time": "19:00"},
-              duration_minutes=30, skippable=True),
-        event("meds", "Meds", "medicine", requires_food=True, timing_confirmed=False,
-              anchor={"ref": "wake_up"}),
+        event(
+            "breakfast",
+            "Breakfast",
+            "meal",
+            **WAKE_PLUS,
+            offset_minutes=60,
+            duration_minutes=20,
+            skippable=True,
+        ),
+        event(
+            "lunch",
+            "Lunch",
+            "meal",
+            anchor={"ref": "event", "id": "breakfast"},
+            offset_minutes=240,
+            duration_minutes=30,
+            skippable=True,
+        ),
+        event(
+            "dinner",
+            "Dinner",
+            "meal",
+            anchor={"ref": "absolute", "time": "19:00"},
+            duration_minutes=30,
+            skippable=True,
+        ),
+        event(
+            "meds",
+            "Meds",
+            "medicine",
+            requires_food=True,
+            timing_confirmed=False,
+            anchor={"ref": "wake_up"},
+        ),
         {
-            "payload": {"type": "quota", "item_label": "Gym", "target_per_week": 4,
-                        "max_misses_per_month": 1, "duration_minutes": 60},
+            "payload": {
+                "type": "quota",
+                "item_label": "Gym",
+                "target_per_week": 4,
+                "max_misses_per_month": 1,
+                "duration_minutes": 60,
+            },
             "raw_text": "gym 4x a week",
             "needs_clarification": "How long is a gym session, and where?",
             "confidence": 0.7,
         },
         event("yoga", "Yoga", "low_priority", duration_minutes=20),
         {
-            "payload": {"type": "commitment", "label": "College", "days_of_week": [0, 2],
-                        "start": "10:00", "end": "14:00", "location": "College",
-                        "commute_minutes": 35},
+            "payload": {
+                "type": "commitment",
+                "label": "College",
+                "days_of_week": [0, 2],
+                "start": "10:00",
+                "end": "14:00",
+                "location": "College",
+                "commute_minutes": 35,
+            },
             "raw_text": "college Mon/Wed 10-2",
         },
         {
-            "payload": {"type": "commitment", "label": "College", "days_of_week": [0, 2],
-                        "start": "16:00", "end": "18:00", "location": "College",
-                        "commute_minutes": 35},
+            "payload": {
+                "type": "commitment",
+                "label": "College",
+                "days_of_week": [0, 2],
+                "start": "16:00",
+                "end": "18:00",
+                "location": "College",
+                "commute_minutes": 35,
+            },
             "raw_text": "college Mon/Wed 4-6",
         },
     ]
-}  # fmt: skip
+}
 P1_QUESTIONS = {
     "questions": [
         {"key": "meds_meals", "text": "Which meals should your meds go with?"},
         {"key": "gym_length", "text": "How long is a gym session?"},
-        {"key": "gym_location", "text": "Where do you go to the gym?",
-         "depends_on": ["gym_length"]},
+        {
+            "key": "gym_location",
+            "text": "Where do you go to the gym?",
+            "depends_on": ["gym_length"],
+        },
     ]
-}  # fmt: skip
+}
 MEDS_SUGGESTION = {
     "summary": "Suggestion: after breakfast and after dinner, at least 6 hours apart.",
     "doses": [{"after": "breakfast"}, {"after": "dinner"}],
@@ -88,17 +139,25 @@ MEDS_SUGGESTION = {
 }
 P2_PARSE = {
     "rules": [
-        event("submit_assignment", "Submit assignment", "task", duration_minutes=30,
-              before_first_commitment=True),
+        event(
+            "submit_assignment",
+            "Submit assignment",
+            "task",
+            duration_minutes=30,
+            before_first_commitment=True,
+        ),
     ]
-}  # fmt: skip
+}
 E7_PARSE = {
     "rules": [{"payload": cases.DINNER_AT_9, "raw_text": cases.E7_TEXT, "confidence": 0.95}]
 }
 E9_PARSE = {
-    "rules": [event("vitamin_d", "Vitamin D", "medicine", timing_confirmed=False,
-                    anchor={"ref": "wake_up"})]
-}  # fmt: skip
+    "rules": [
+        event(
+            "vitamin_d", "Vitamin D", "medicine", timing_confirmed=False, anchor={"ref": "wake_up"}
+        )
+    ]
+}
 VITAMIN_SUGGESTION = {
     "summary": "Suggestion: once a day after breakfast.",
     "doses": [{"after": "breakfast"}],
@@ -158,8 +217,11 @@ def main() -> None:
         "contradictions-e7": (
             "contradictions",
             {"new_rule": STORED_DINNER_AT_9, "existing": [E7_CONTEXT]},
-            {"contradictions": [{"existing_rule_id": 1,
-                                 "explanation": "Dinner at 9 PM cannot be done by 8 PM."}]},
+            {
+                "contradictions": [
+                    {"existing_rule_id": 1, "explanation": "Dinner at 9 PM cannot be done by 8 PM."}
+                ]
+            },
         ),
         "prep-p3": ("prep", {"events": cases.P3_EVENTS}, PREP),
         "classify-c7": (
@@ -167,7 +229,7 @@ def main() -> None:
             {"title": "Catch-up at Chipotle"},
             {"classified_as": "meal", "meal_type": "lunch", "reason": "Chipotle is a restaurant."},
         ),
-    }  # fmt: skip
+    }
     for name, (history, patterns) in cases.HISTORIES.items():
         recordings[f"analyze-{name}"] = (
             "analyze",

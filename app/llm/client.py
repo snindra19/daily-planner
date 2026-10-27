@@ -115,9 +115,12 @@ class LiveClient:
             raise LLMError(f"The LLM returned an error ({error.status_code}).") from error
         log.info(
             "llm task=%s model=%s input_tokens=%s output_tokens=%s stop=%s",
-            task, self.model, response.usage.input_tokens, response.usage.output_tokens,
+            task,
+            self.model,
+            response.usage.input_tokens,
+            response.usage.output_tokens,
             response.stop_reason,
-        )  # fmt: skip
+        )
         if response.stop_reason == "refusal":
             raise LLMError("The LLM declined this request.")
         for block in response.content:
@@ -132,7 +135,7 @@ def make_client(settings: Settings | None = None) -> LLMClient:
     return LiveClient(current) if current.llm_mode == "live" else MockClient()
 
 
-def call_structured(
+def call_structured[Output: BaseModel](
     client: LLMClient, task: str, model: type[Output], primary: Any, context: Any = None
 ) -> Output:
     """Run a task and validate the output. Retries once, then raises CouldNotUnderstand."""

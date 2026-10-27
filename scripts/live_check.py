@@ -35,12 +35,30 @@ def checks(client: LiveClient) -> list[tuple[str, object]]:
     prep = tasks.prep(client, cases.P3_EVENTS, {"item_keys": keys, "plan": [], "rules": []})
     medicine = tasks.medicine(client, "Vitamin D", [])
     classified = tasks.classify(client, "Catch-up at Chipotle")
-    explained = tasks.explain(client, {"summary": "Lunch moved to 14:00", "score": 60,
-                                       "breakdown": {"delay": 60},
-                                       "alternatives": [{"label": "Apple during class", "score": 80}]})  # fmt: skip
-    patterns = tasks.analyze(client, {"window_days": 60, "groups": [
-        {"kind": "prep_reminder", "context": {"label": "Take laptop"}, "signal": "rejected",
-         "chosen": None, "count": 4}]})  # fmt: skip
+    explained = tasks.explain(
+        client,
+        {
+            "summary": "Lunch moved to 14:00",
+            "score": 60,
+            "breakdown": {"delay": 60},
+            "alternatives": [{"label": "Apple during class", "score": 80}],
+        },
+    )
+    patterns = tasks.analyze(
+        client,
+        {
+            "window_days": 60,
+            "groups": [
+                {
+                    "kind": "prep_reminder",
+                    "context": {"label": "Take laptop"},
+                    "signal": "rejected",
+                    "chosen": None,
+                    "count": 4,
+                }
+            ],
+        },
+    )
     return [
         ("parse finds rule types", kinds),
         ("parse leaves meds timing unconfirmed", [m.timing_confirmed for m in meds]),

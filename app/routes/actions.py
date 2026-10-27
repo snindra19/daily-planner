@@ -278,8 +278,16 @@ def add_commitment(
 ) -> RedirectResponse:
     """Add a commitment. Days are comma-separated, 0 for Monday."""
     weekdays = [int(d) for d in days.split(",") if d.strip()]
-    db.add(CommitmentRow(label=label, days_of_week=weekdays, start=start, end=end,
-                         location=location or None, commute_minutes=commute_minutes))  # fmt: skip
+    db.add(
+        CommitmentRow(
+            label=label,
+            days_of_week=weekdays,
+            start=start,
+            end=end,
+            location=location or None,
+            commute_minutes=commute_minutes,
+        )
+    )
     db.commit()
     return _go("/profile")
 
@@ -300,8 +308,14 @@ def add_food(
     db: Session = Depends(get_db),
 ) -> RedirectResponse:
     """Add an approved food option."""
-    db.add(FoodOptionRow(label=label, duration_minutes=duration_minutes,
-                         allowed_during_busy=bool(allowed_during_busy), approved=True))  # fmt: skip
+    db.add(
+        FoodOptionRow(
+            label=label,
+            duration_minutes=duration_minutes,
+            allowed_during_busy=bool(allowed_during_busy),
+            approved=True,
+        )
+    )
     db.commit()
     return _go("/profile")
 

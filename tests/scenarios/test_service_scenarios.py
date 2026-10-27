@@ -180,8 +180,12 @@ def test_p5_earlier_wake_keeps_fixed_blocks(db: Session) -> None:
 
 
 def test_e7_contradiction_is_shown_and_the_user_picks(db: Session) -> None:
-    old = Rule(raw_text="dinner done by 8", payload=cases.DINNER_BY_8, kind="constraint",
-               status="confirmed")  # fmt: skip
+    old = Rule(
+        raw_text="dinner done by 8",
+        payload=cases.DINNER_BY_8,
+        kind="constraint",
+        status="confirmed",
+    )
     db.add(old)
     db.commit()
     drafts = rule_service.parse_text(db, cases.E7_TEXT, llm)
@@ -202,8 +206,12 @@ def test_e7_contradiction_is_shown_and_the_user_picks(db: Session) -> None:
 
 
 def test_e7_user_can_keep_the_new_rule(db: Session) -> None:
-    old = Rule(raw_text="dinner done by 8", payload=cases.DINNER_BY_8, kind="constraint",
-               status="confirmed")  # fmt: skip
+    old = Rule(
+        raw_text="dinner done by 8",
+        payload=cases.DINNER_BY_8,
+        kind="constraint",
+        status="confirmed",
+    )
     db.add(old)
     db.commit()
     new = rule_service.parse_text(db, cases.E7_TEXT, llm)[0]
@@ -216,10 +224,16 @@ def test_e7_user_can_keep_the_new_rule(db: Session) -> None:
 def test_e8_conflict_is_found_on_the_profile_page_data(db: Session) -> None:
     data = load("golden_16_5")
     data["rules"] = [
-        {"type": "event", "id": "gym", "label": "Gym", "category": "quota",
-         "anchor": {"ref": "absolute", "time": "18:00"}, "duration_minutes": 60,
-         "days_of_week": [0]},
-    ]  # fmt: skip
+        {
+            "type": "event",
+            "id": "gym",
+            "label": "Gym",
+            "category": "quota",
+            "anchor": {"ref": "absolute", "time": "18:00"},
+            "duration_minutes": 60,
+            "days_of_week": [0],
+        },
+    ]
     seed(db, data)
     conflicts = rule_service.indirect_conflicts(db)
     assert len(conflicts) == 1
@@ -397,10 +411,15 @@ def test_m7_restricted_just_for_tomorrow(db: Session) -> None:
     data = load("golden_16_6")
     seed(db, data, mode="unrestricted")
     tomorrow_events = [
-        CalendarEvent(**{**e, "start": e["start"].replace("11-02", "11-03"),
-                         "end": e["end"].replace("11-02", "11-03")})
+        CalendarEvent(
+            **{
+                **e,
+                "start": e["start"].replace("11-02", "11-03"),
+                "end": e["end"].replace("11-02", "11-03"),
+            }
+        )
         for e in data["calendar_events"]
-    ]  # fmt: skip
+    ]
     update_changes(db, TUESDAY.isoformat(), approval_mode="restricted")
     tomorrow = plan_service.compute_plan(db, TUESDAY, source=StaticCalendar(tomorrow_events))
     assert tomorrow.mode == "restricted"
@@ -419,10 +438,15 @@ def test_m8_always_creates_a_standing_approval(db: Session) -> None:
     approval_service.decide(db, row.id, "always")
     assert db.query(StandingApprovalRow).count() == 1
     next_week = [
-        CalendarEvent(**{**e, "start": e["start"].replace("11-02", "11-09"),
-                         "end": e["end"].replace("11-02", "11-09")})
+        CalendarEvent(
+            **{
+                **e,
+                "start": e["start"].replace("11-02", "11-09"),
+                "end": e["end"].replace("11-02", "11-09"),
+            }
+        )
         for e in data["calendar_events"]
-    ]  # fmt: skip
+    ]
     result = plan_service.compute_plan(
         db, date(2026, 11, 9), source=StaticCalendar(next_week)
     ).result

@@ -135,8 +135,12 @@ def _drafts(db: Session, only_date: str | None = None) -> list[Rule]:
     rows = db.query(Rule).filter_by(status="draft").order_by(Rule.id).all()
     if only_date is None:
         return [r for r in rows if not r.payload.get("only_date") and not r.payload.get("date")]
-    return [r for only in [only_date] for r in rows if only in (
-        r.payload.get("only_date"), r.payload.get("date"))]  # fmt: skip
+    return [
+        r
+        for only in [only_date]
+        for r in rows
+        if only in (r.payload.get("only_date"), r.payload.get("date"))
+    ]
 
 
 def profile_context(db: Session) -> dict[str, Any]:

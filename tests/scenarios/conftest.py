@@ -37,7 +37,7 @@ def seed(session: Session, data: dict[str, Any], mode: str = "restricted") -> No
                 payload=payload,
                 kind=payload["type"],
                 status="confirmed",
-            )  # fmt: skip
+            )
         )
     for row in data.get("commitments", []):
         fields = {k: v for k, v in row.items() if k != "id"}

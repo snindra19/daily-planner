@@ -49,9 +49,17 @@ def busy_day() -> dict:
     return {
         "date": MONDAY,
         "wake": "07:00",
-        "rules": [{"type": "event", "id": "gym", "label": "Gym", "category": "quota",
-                   "duration_minutes": 60}],
-        "commitments": [{"id": "work", "label": "Work", "days_of_week": [0], "start": "06:00",
-                         "end": "23:30"}],
+        "rules": [
+            {
+                "type": "event",
+                "id": "gym",
+                "label": "Gym",
+                "category": "quota",
+                "duration_minutes": 60,
+            }
+        ],
+        "commitments": [
+            {"id": "work", "label": "Work", "days_of_week": [0], "start": "06:00", "end": "23:30"}
+        ],
         "quotas": [{"item_label": "Gym", "target_per_week": 4, "max_misses_per_month": 1}],
-    }  # fmt: skip
+    }

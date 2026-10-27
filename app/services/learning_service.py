@@ -117,9 +117,13 @@ def _consider(db: Session, today: Date, candidate: PatternCandidate, mode: str) 
     if not _allowed(candidate):
         return
     evidence, consistency = measure(
-        db, today, candidate.kind, candidate.context,
-        candidate.consistent_signal, candidate.consistent_chosen,
-    )  # fmt: skip
+        db,
+        today,
+        candidate.kind,
+        candidate.context,
+        candidate.consistent_signal,
+        candidate.consistent_chosen,
+    )
     if not _passes(evidence, consistency):
         return
     match = {
@@ -153,9 +157,13 @@ def recheck(db: Session, today: Date) -> None:
     for row in rows.all():
         match = row.match or {}
         evidence, consistency = measure(
-            db, today, match.get("kind", ""), match.get("context", {}),
-            match.get("consistent_signal"), match.get("consistent_chosen"),
-        )  # fmt: skip
+            db,
+            today,
+            match.get("kind", ""),
+            match.get("context", {}),
+            match.get("consistent_signal"),
+            match.get("consistent_chosen"),
+        )
         row.evidence_count = evidence
         row.consistency = consistency
         if row.status != "active" or consistency >= MIN_CONSISTENCY:

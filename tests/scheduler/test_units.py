@@ -92,10 +92,17 @@ def test_same_inputs_give_the_same_output() -> None:
 
 def test_doses_never_closer_than_min_gap() -> None:
     rules = [
-        event("dose_a", category="medicine", anchor=WAKE_ANCHOR, min_gap_minutes=300, dose_group="m"),
-        event("dose_b", category="medicine", anchor={"ref": "absolute", "time": "10:00"},
-              min_gap_minutes=300, dose_group="m"),
-    ]  # fmt: skip
+        event(
+            "dose_a", category="medicine", anchor=WAKE_ANCHOR, min_gap_minutes=300, dose_group="m"
+        ),
+        event(
+            "dose_b",
+            category="medicine",
+            anchor={"ref": "absolute", "time": "10:00"},
+            min_gap_minutes=300,
+            dose_group="m",
+        ),
+    ]
     result = plan({"date": DAY, "wake": "08:00", "rules": rules})
     assert at(result, "dose_b") == "13:00"
     assert result.pending_approvals[0].kind == "spacing"
@@ -103,10 +110,17 @@ def test_doses_never_closer_than_min_gap() -> None:
 
 def test_rejected_spacing_leaves_the_dose_unslotted_not_crammed() -> None:
     rules = [
-        event("dose_a", category="medicine", anchor=WAKE_ANCHOR, min_gap_minutes=300, dose_group="m"),
-        event("dose_b", category="medicine", anchor={"ref": "absolute", "time": "10:00"},
-              min_gap_minutes=300, dose_group="m"),
-    ]  # fmt: skip
+        event(
+            "dose_a", category="medicine", anchor=WAKE_ANCHOR, min_gap_minutes=300, dose_group="m"
+        ),
+        event(
+            "dose_b",
+            category="medicine",
+            anchor={"ref": "absolute", "time": "10:00"},
+            min_gap_minutes=300,
+            dose_group="m",
+        ),
+    ]
     decisions = {"spacing:dose_b": {"rejected": True}}
     result = plan({"date": DAY, "wake": "08:00", "rules": rules, "decisions": decisions})
     assert result.item("dose_b") is None

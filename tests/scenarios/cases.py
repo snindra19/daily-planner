@@ -66,10 +66,12 @@ def decision(day: int, kind: str, context: dict, chosen: str | None, signal: str
 
 
 L1_HISTORY = [
-    *[decision(d, "fallback", FALLBACK_CONTEXT, SNACK_AFTER, "picked_alternative")
-      for d in range(1, 7)],
+    *[
+        decision(d, "fallback", FALLBACK_CONTEXT, SNACK_AFTER, "picked_alternative")
+        for d in range(1, 7)
+    ],
     decision(7, "fallback", FALLBACK_CONTEXT, APPLE_DURING, "approved"),
-]  # fmt: skip
+]
 L2_HISTORY = [
     decision(d, "fallback", FALLBACK_CONTEXT, SNACK_AFTER, "picked_alternative") for d in (1, 2)
 ]

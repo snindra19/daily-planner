@@ -104,9 +104,16 @@ def test_e8_gym_vs_class_plus_commute() -> None:
     data = golden_5()
     data["rules"] = [r for r in data["rules"] if r["id"] != "gym"]
     data["rules"].append(
-        {"type": "event", "id": "gym", "label": "Gym", "category": "quota",
-         "anchor": absolute("18:00"), "duration_minutes": 60, "days_of_week": [0]}
-    )  # fmt: skip
+        {
+            "type": "event",
+            "id": "gym",
+            "label": "Gym",
+            "category": "quota",
+            "anchor": absolute("18:00"),
+            "duration_minutes": 60,
+            "days_of_week": [0],
+        }
+    )
     result = plan(data)
     conflict = next(c for c in result.conflicts if c.kind == "indirect")
     assert "Gym at 18:00 can never fit" in conflict.message
@@ -128,11 +135,22 @@ def test_e11_day_override_removes_afternoon_class_for_that_date() -> None:
 
 def test_e12_item_cannot_be_slotted() -> None:
     rules = [
-        {"type": "event", "id": "assignment", "label": "Assignment", "category": "task",
-         "duration_minutes": 60, "before_first_commitment": True},
-    ]  # fmt: skip
-    commitment = {"id": "work", "label": "Work", "days_of_week": [0], "start": "08:30",
-                  "end": "20:00"}  # fmt: skip
+        {
+            "type": "event",
+            "id": "assignment",
+            "label": "Assignment",
+            "category": "task",
+            "duration_minutes": 60,
+            "before_first_commitment": True,
+        },
+    ]
+    commitment = {
+        "id": "work",
+        "label": "Work",
+        "days_of_week": [0],
+        "start": "08:30",
+        "end": "20:00",
+    }
     result = plan({"date": MONDAY, "wake": "08:00", "rules": rules, "commitments": [commitment]})
     assert result.unslotted[0].message == "Couldn't fit: Assignment (1h)"
     assert result.unslotted[0].recommendations
@@ -152,8 +170,12 @@ def test_e13_no_warning_when_spacing_holds() -> None:
     rules = [dict(r) for r in golden_5()["rules"]]
     for rule in rules:
         rule.pop("min_gap_minutes", None)
-    result = plan(golden_5(), rules=rules, commitments=[],
-                  day_overrides={"reorder": [{"item_key": "lunch", "after": "gym"}]})  # fmt: skip
+    result = plan(
+        golden_5(),
+        rules=rules,
+        commitments=[],
+        day_overrides={"reorder": [{"item_key": "lunch", "after": "gym"}]},
+    )
     assert result.item("medicine_2").start == result.item("lunch").end
     assert not [w for w in result.warnings if "spacing" in w]
 
@@ -192,8 +214,11 @@ def test_e15_gym_would_end_after_sleep() -> None:
 
 
 def test_c1_calendar_lunch_replaces_rule_lunch() -> None:
-    data = {**golden_5(), "commitments": [], **calendar(
-        ("alex", "Lunch with Alex", "12:30", "13:30", "meal", "lunch"))}  # fmt: skip
+    data = {
+        **golden_5(),
+        "commitments": [],
+        **calendar(("alex", "Lunch with Alex", "12:30", "13:30", "meal", "lunch")),
+    }
     result = plan(data)
     assert result.item("lunch") is None
     assert result.item("cal:alex").label == "Lunch with Alex"
@@ -201,10 +226,22 @@ def test_c1_calendar_lunch_replaces_rule_lunch() -> None:
 
 
 def test_c2_meeting_during_meds() -> None:
-    rules = [{"type": "event", "id": "pills", "label": "Pills", "category": "medicine",
-              "anchor": absolute("14:30"), "allowed_during_busy": True}]  # fmt: skip
-    data = {"date": MONDAY, "wake": "07:00", "rules": rules,
-            **calendar(("m", "Review", "14:00", "15:00", "meeting", None))}  # fmt: skip
+    rules = [
+        {
+            "type": "event",
+            "id": "pills",
+            "label": "Pills",
+            "category": "medicine",
+            "anchor": absolute("14:30"),
+            "allowed_during_busy": True,
+        }
+    ]
+    data = {
+        "date": MONDAY,
+        "wake": "07:00",
+        "rules": rules,
+        **calendar(("m", "Review", "14:00", "15:00", "meeting", None)),
+    }
     proposal = plan(data).pending_approvals[0]
     assert proposal.kind == "during_busy"
     assert {proposal.chosen.id, proposal.alternatives[0].id} == {"during", "after"}
@@ -220,8 +257,7 @@ def test_c3_meeting_blocks_lunch() -> None:
 
 
 def test_c4_duplicate_class_is_flagged_and_counted_once() -> None:
-    data = {**golden_5(), **calendar(
-        ("dup", "CSE Class", "10:00", "14:00", "meeting", None))}  # fmt: skip
+    data = {**golden_5(), **calendar(("dup", "CSE Class", "10:00", "14:00", "meeting", None))}
     result = plan(data)
     assert any(c.kind == "duplicate" for c in result.conflicts)
     assert result.item("cal:dup") is None
@@ -229,13 +265,19 @@ def test_c4_duplicate_class_is_flagged_and_counted_once() -> None:
 
 
 def test_c8_location_drives_leave_by() -> None:
-    with_place = {"date": MONDAY, "wake": "07:00", **calendar(
-        ("a", "Client visit", "10:00", "11:00", "meeting", None, "Office Park"))}  # fmt: skip
+    with_place = {
+        "date": MONDAY,
+        "wake": "07:00",
+        **calendar(("a", "Client visit", "10:00", "11:00", "meeting", None, "Office Park")),
+    }
     result = plan(with_place)
     assert at(result, "cal:a:leave") == "09:30"
     assert result.item("cal:a").flags == []
-    without = {"date": MONDAY, "wake": "07:00", **calendar(
-        ("b", "Client visit", "10:00", "11:00", "meeting", None))}  # fmt: skip
+    without = {
+        "date": MONDAY,
+        "wake": "07:00",
+        **calendar(("b", "Client visit", "10:00", "11:00", "meeting", None)),
+    }
     result = plan(without)
     assert result.item("cal:b:leave") is None
     assert result.item("cal:b").flags == ["assumed_away"]
@@ -244,9 +286,15 @@ def test_c8_location_drives_leave_by() -> None:
 def test_c9_all_day_events_do_not_block_time() -> None:
     data = golden_5()
     data["calendar_events"] = [
-        {"source_id": "bday", "title": "Mom's birthday", "start": "2026-11-02T00:00:00",
-         "end": "2026-11-03T00:00:00", "all_day": True, "classified_as": "ignore"},
-    ]  # fmt: skip
+        {
+            "source_id": "bday",
+            "title": "Mom's birthday",
+            "start": "2026-11-02T00:00:00",
+            "end": "2026-11-03T00:00:00",
+            "all_day": True,
+            "classified_as": "ignore",
+        },
+    ]
     result = plan(data)
     assert result.surfaced_events == ["Mom's birthday"]
     assert result.item("cal:bday") is None
@@ -285,15 +333,36 @@ def test_m5_unrestricted_cramming_keeps_spacing() -> None:
 
 def test_m8_standing_approval_auto_applies_only_its_case() -> None:
     rules = [
-        {"type": "event", "id": "pills", "label": "Pills", "category": "medicine",
-         "anchor": absolute("14:30"), "allowed_during_busy": True},
-        {"type": "event", "id": "reading", "label": "Reading", "category": "routine",
-         "anchor": absolute("14:15"), "duration_minutes": 30},
-    ]  # fmt: skip
-    standing = [{"match": {"kind": "during_busy", "category": "medicine", "block_kind": "meeting"},
-                 "action": {"choice": "during"}}]  # fmt: skip
-    data = {"date": MONDAY, "wake": "07:00", "rules": rules, "standing_approvals": standing,
-            **calendar(("m", "Review", "14:00", "15:00", "meeting", None))}  # fmt: skip
+        {
+            "type": "event",
+            "id": "pills",
+            "label": "Pills",
+            "category": "medicine",
+            "anchor": absolute("14:30"),
+            "allowed_during_busy": True,
+        },
+        {
+            "type": "event",
+            "id": "reading",
+            "label": "Reading",
+            "category": "routine",
+            "anchor": absolute("14:15"),
+            "duration_minutes": 30,
+        },
+    ]
+    standing = [
+        {
+            "match": {"kind": "during_busy", "category": "medicine", "block_kind": "meeting"},
+            "action": {"choice": "during"},
+        }
+    ]
+    data = {
+        "date": MONDAY,
+        "wake": "07:00",
+        "rules": rules,
+        "standing_approvals": standing,
+        **calendar(("m", "Review", "14:00", "15:00", "meeting", None)),
+    }
     result = plan(data)
     pills = result.item("pills")
     assert pills.start == 14 * 60 + 30
