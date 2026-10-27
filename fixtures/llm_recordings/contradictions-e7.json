@@ -1,0 +1,52 @@
+{
+  "task": "contradictions",
+  "primary": {
+    "new_rule": {
+      "type": "event",
+      "id": "dinner_at_9",
+      "label": "Dinner",
+      "category": "meal",
+      "anchor": {
+        "ref": "absolute",
+        "time": "21:00"
+      },
+      "offset_minutes": 0,
+      "after_end": false,
+      "duration_minutes": 30,
+      "skippable": false,
+      "days_of_week": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "requires_food": false,
+      "allowed_during_busy": false,
+      "timing_confirmed": true,
+      "meal_type": "dinner",
+      "before_first_commitment": false
+    },
+    "existing": [
+      {
+        "rule_id": 1,
+        "raw_text": "dinner done by 8",
+        "type": "constraint",
+        "id": "dinner_window",
+        "event_ref": "dinner",
+        "must_end_by": "20:00",
+        "on_violation": "propose_move"
+      }
+    ]
+  },
+  "output": {
+    "contradictions": [
+      {
+        "existing_rule_id": 1,
+        "explanation": "Dinner at 9 PM cannot be done by 8 PM."
+      }
+    ]
+  }
+}

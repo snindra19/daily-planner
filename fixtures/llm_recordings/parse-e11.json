@@ -1,0 +1,17 @@
+{
+  "task": "parse",
+  "primary": {
+    "text": "No class tomorrow afternoon"
+  },
+  "output": {
+    "rules": [
+      {
+        "payload": {
+          "type": "day_override",
+          "no_commitments_after": "15:00"
+        },
+        "raw_text": "No class tomorrow afternoon"
+      }
+    ]
+  }
+}

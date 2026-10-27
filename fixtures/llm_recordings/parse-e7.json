@@ -1,0 +1,25 @@
+{
+  "task": "parse",
+  "primary": {
+    "text": "dinner at 9 PM"
+  },
+  "output": {
+    "rules": [
+      {
+        "payload": {
+          "type": "event",
+          "id": "dinner_at_9",
+          "label": "Dinner",
+          "category": "meal",
+          "anchor": {
+            "ref": "absolute",
+            "time": "21:00"
+          },
+          "duration_minutes": 30
+        },
+        "raw_text": "dinner at 9 PM",
+        "confidence": 0.95
+      }
+    ]
+  }
+}

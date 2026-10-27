@@ -1,0 +1,11 @@
+{
+  "task": "classify",
+  "primary": {
+    "title": "Catch-up at Chipotle"
+  },
+  "output": {
+    "classified_as": "meal",
+    "meal_type": "lunch",
+    "reason": "Chipotle is a restaurant."
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "task": "parse",
+  "primary": {
+    "text": "new medicine: vitamin D"
+  },
+  "output": {
+    "rules": [
+      {
+        "payload": {
+          "type": "event",
+          "id": "vitamin_d",
+          "label": "Vitamin D",
+          "category": "medicine",
+          "timing_confirmed": false,
+          "anchor": {
+            "ref": "wake_up"
+          }
+        },
+        "raw_text": "Vitamin D",
+        "confidence": 0.9
+      }
+    ]
+  }
+}

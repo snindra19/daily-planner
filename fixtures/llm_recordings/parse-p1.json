@@ -1,0 +1,142 @@
+{
+  "task": "parse",
+  "primary": {
+    "text": "wake up 7 weekdays, 9 weekends, 3 meals, meds twice a day after food, gym 4x a week, yoga when possible, college Mon/Wed 10-2 and 4-6, commute 35 min"
+  },
+  "output": {
+    "rules": [
+      {
+        "payload": {
+          "type": "profile_setting",
+          "default_wake_by_weekday": {
+            "0": "07:00",
+            "1": "07:00",
+            "2": "07:00",
+            "3": "07:00",
+            "4": "07:00",
+            "5": "09:00",
+            "6": "09:00"
+          }
+        },
+        "raw_text": "wake up 7 weekdays, 9 weekends"
+      },
+      {
+        "payload": {
+          "type": "event",
+          "id": "breakfast",
+          "label": "Breakfast",
+          "category": "meal",
+          "anchor": {
+            "ref": "wake_up"
+          },
+          "offset_minutes": 60,
+          "duration_minutes": 20,
+          "skippable": true
+        },
+        "raw_text": "Breakfast",
+        "confidence": 0.9
+      },
+      {
+        "payload": {
+          "type": "event",
+          "id": "lunch",
+          "label": "Lunch",
+          "category": "meal",
+          "anchor": {
+            "ref": "event",
+            "id": "breakfast"
+          },
+          "offset_minutes": 240,
+          "duration_minutes": 30,
+          "skippable": true
+        },
+        "raw_text": "Lunch",
+        "confidence": 0.9
+      },
+      {
+        "payload": {
+          "type": "event",
+          "id": "dinner",
+          "label": "Dinner",
+          "category": "meal",
+          "anchor": {
+            "ref": "absolute",
+            "time": "19:00"
+          },
+          "duration_minutes": 30,
+          "skippable": true
+        },
+        "raw_text": "Dinner",
+        "confidence": 0.9
+      },
+      {
+        "payload": {
+          "type": "event",
+          "id": "meds",
+          "label": "Meds",
+          "category": "medicine",
+          "requires_food": true,
+          "timing_confirmed": false,
+          "anchor": {
+            "ref": "wake_up"
+          }
+        },
+        "raw_text": "Meds",
+        "confidence": 0.9
+      },
+      {
+        "payload": {
+          "type": "quota",
+          "item_label": "Gym",
+          "target_per_week": 4,
+          "max_misses_per_month": 1,
+          "duration_minutes": 60
+        },
+        "raw_text": "gym 4x a week",
+        "needs_clarification": "How long is a gym session, and where?",
+        "confidence": 0.7
+      },
+      {
+        "payload": {
+          "type": "event",
+          "id": "yoga",
+          "label": "Yoga",
+          "category": "low_priority",
+          "duration_minutes": 20
+        },
+        "raw_text": "Yoga",
+        "confidence": 0.9
+      },
+      {
+        "payload": {
+          "type": "commitment",
+          "label": "College",
+          "days_of_week": [
+            0,
+            2
+          ],
+          "start": "10:00",
+          "end": "14:00",
+          "location": "College",
+          "commute_minutes": 35
+        },
+        "raw_text": "college Mon/Wed 10-2"
+      },
+      {
+        "payload": {
+          "type": "commitment",
+          "label": "College",
+          "days_of_week": [
+            0,
+            2
+          ],
+          "start": "16:00",
+          "end": "18:00",
+          "location": "College",
+          "commute_minutes": 35
+        },
+        "raw_text": "college Mon/Wed 4-6"
+      }
+    ]
+  }
+}

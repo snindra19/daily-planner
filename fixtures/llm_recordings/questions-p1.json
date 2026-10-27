@@ -1,0 +1,25 @@
+{
+  "task": "questions",
+  "primary": {
+    "text": "wake up 7 weekdays, 9 weekends, 3 meals, meds twice a day after food, gym 4x a week, yoga when possible, college Mon/Wed 10-2 and 4-6, commute 35 min"
+  },
+  "output": {
+    "questions": [
+      {
+        "key": "meds_meals",
+        "text": "Which meals should your meds go with?"
+      },
+      {
+        "key": "gym_length",
+        "text": "How long is a gym session?"
+      },
+      {
+        "key": "gym_location",
+        "text": "Where do you go to the gym?",
+        "depends_on": [
+          "gym_length"
+        ]
+      }
+    ]
+  }
+}

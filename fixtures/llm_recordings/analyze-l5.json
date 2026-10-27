@@ -1,0 +1,35 @@
+{
+  "task": "analyze",
+  "primary": {
+    "window_days": 60,
+    "groups": [
+      {
+        "kind": "skip",
+        "context": {
+          "item": "yoga",
+          "kind": "skip"
+        },
+        "signal": "manual_skip",
+        "chosen": "yoga",
+        "count": 5
+      }
+    ]
+  },
+  "output": {
+    "patterns": [
+      {
+        "description": "Usually skips yoga",
+        "kind": "skip",
+        "context": {
+          "item": "yoga"
+        },
+        "consistent_signal": "manual_skip",
+        "effect": {
+          "type": "recommendation",
+          "item": "yoga",
+          "text": "Skip Yoga"
+        }
+      }
+    ]
+  }
+}

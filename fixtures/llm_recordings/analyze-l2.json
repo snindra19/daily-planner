@@ -1,0 +1,39 @@
+{
+  "task": "analyze",
+  "primary": {
+    "window_days": 60,
+    "groups": [
+      {
+        "kind": "fallback",
+        "context": {
+          "block_kind": "meeting",
+          "category": "medicine",
+          "kind": "fallback",
+          "meal": "lunch"
+        },
+        "signal": "picked_alternative",
+        "chosen": "meal_nearest_slot",
+        "count": 2
+      }
+    ]
+  },
+  "output": {
+    "patterns": [
+      {
+        "description": "Picks food after the meeting over food during the meeting",
+        "kind": "fallback",
+        "context": {
+          "meal": "lunch",
+          "block_kind": "meeting"
+        },
+        "consistent_signal": "picked_alternative",
+        "consistent_chosen": "meal_nearest_slot",
+        "effect": {
+          "type": "weight",
+          "key": "during_busy_food",
+          "value": 150
+        }
+      }
+    ]
+  }
+}

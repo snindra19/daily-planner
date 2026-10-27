@@ -1,0 +1,37 @@
+{
+  "task": "prep",
+  "primary": {
+    "events": [
+      {
+        "source_id": "dinner_friends",
+        "title": "Dinner with friends",
+        "start": "2026-11-03T20:00:00",
+        "end": "2026-11-03T21:00:00",
+        "location": "Andres Carne de Res"
+      },
+      {
+        "source_id": "late_meeting",
+        "title": "Project meeting",
+        "start": "2026-11-03T21:30:00",
+        "end": "2026-11-03T22:00:00",
+        "location": null
+      }
+    ]
+  },
+  "output": {
+    "proposals": [
+      {
+        "label": "Pack medicines",
+        "reason": "Dinner is away from home and your medicine follows it.",
+        "relative_to": "cal:dinner_friends:leave",
+        "offset_minutes": -30
+      },
+      {
+        "label": "Take laptop to dinner",
+        "reason": "Your 9:30 PM meeting has no location, and dinner may run close to it.",
+        "relative_to": "cal:dinner_friends:leave",
+        "offset_minutes": -5
+      }
+    ]
+  }
+}

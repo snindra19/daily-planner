@@ -1,0 +1,19 @@
+{
+  "task": "medicine",
+  "primary": {
+    "label": "Meds"
+  },
+  "output": {
+    "summary": "Suggestion: after breakfast and after dinner, at least 6 hours apart.",
+    "doses": [
+      {
+        "after": "breakfast"
+      },
+      {
+        "after": "dinner"
+      }
+    ],
+    "min_gap_minutes": 360,
+    "requires_food": true
+  }
+}

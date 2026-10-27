@@ -1,0 +1,22 @@
+{
+  "task": "parse",
+  "primary": {
+    "text": "submit assignment before class"
+  },
+  "output": {
+    "rules": [
+      {
+        "payload": {
+          "type": "event",
+          "id": "submit_assignment",
+          "label": "Submit assignment",
+          "category": "task",
+          "duration_minutes": 30,
+          "before_first_commitment": true
+        },
+        "raw_text": "Submit assignment",
+        "confidence": 0.9
+      }
+    ]
+  }
+}

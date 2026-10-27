@@ -1,0 +1,15 @@
+{
+  "task": "medicine",
+  "primary": {
+    "label": "Vitamin D"
+  },
+  "output": {
+    "summary": "Suggestion: once a day after breakfast.",
+    "doses": [
+      {
+        "after": "breakfast"
+      }
+    ],
+    "requires_food": true
+  }
+}
