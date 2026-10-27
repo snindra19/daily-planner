@@ -162,7 +162,7 @@ class ExplanationResult(BaseModel):
 
 
 class PatternCandidate(BaseModel):
-    """A pattern in decision history. Code re-counts the evidence; these fields say what to count."""
+    """A pattern in decision history. Code re-counts the evidence from these fields."""
 
     description: str
     kind: str

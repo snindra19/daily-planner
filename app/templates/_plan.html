@@ -32,7 +32,7 @@
         <span class="flex-1 min-w-0">{{ entry.row.label }}</span>
       </div>
       {% for item in entry['items'] %}
-      <div class="mt-1 ml-0 sm:ml-[7.5rem] flex flex-wrap items-center gap-2 text-xs">
+      <div class="mt-1 ml-0 sm:ml-[8.5rem] flex flex-wrap items-center gap-2 text-xs">
         {% if entry['items'] | length > 1 %}<span class="text-stone-600">{{ item.label }}</span>{% endif %}
         {% if item.status == 'proposed' %}<span class="rounded bg-violet-100 text-violet-900 px-1.5">proposed</span>{% endif %}
         {% if item.status == 'auto' %}<span class="rounded bg-amber-100 text-amber-900 px-1.5">auto</span>{% endif %}

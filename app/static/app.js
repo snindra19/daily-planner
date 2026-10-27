@@ -1,4 +1,13 @@
 // SortableJS wiring only: priority order, Today reorder, and late-open Done / Not done lists.
+function syncLateForm(root) {
+  const form = root.querySelector("#late-form");
+  if (!form) return;
+  for (const name of ["done", "not_done"]) {
+    const keys = [...form.querySelectorAll(`#late-${name} [data-key]`)].map((el) => el.dataset.key);
+    form.querySelector(`input[name=${name}]`).value = keys.join(",");
+  }
+}
+
 function setup(root) {
   const priorities = root.querySelector("#priority-list");
   if (priorities) {
@@ -18,7 +27,7 @@ function setup(root) {
       handle: ".drag",
       onEnd(event) {
         const previous = event.item.previousElementSibling;
-        if (!previous) return;
+        if (!previous || event.oldIndex === event.newIndex) return;
         htmx.ajax("POST", "/items/reorder", {
           values: { item_key: event.item.dataset.key, after: previous.dataset.key },
           target: "body",
@@ -27,18 +36,11 @@ function setup(root) {
     });
   }
 
+  // The hidden fields stay current, because htmx reads a boosted form as soon as it submits.
   for (const list of root.querySelectorAll(".late-list")) {
-    new Sortable(list, { group: "late", animation: 120 });
+    new Sortable(list, { group: "late", animation: 120, onSort: () => syncLateForm(root) });
   }
-  const lateForm = root.querySelector("#late-form");
-  if (lateForm) {
-    lateForm.addEventListener("submit", () => {
-      for (const name of ["done", "not_done"]) {
-        const keys = [...root.querySelectorAll(`#late-${name} [data-key]`)].map((el) => el.dataset.key);
-        lateForm.querySelector(`input[name=${name}]`).value = keys.join(",");
-      }
-    });
-  }
+  syncLateForm(root);
 }
 
 htmx.onLoad(setup);
