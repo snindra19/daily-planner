@@ -1,0 +1,112 @@
+{% macro time(minutes) %}{{ '%02d:%02d' % (minutes // 60, minutes % 60) }}{% endmacro %}
+
+{% macro banners(view) %}
+  {% if view.error %}<p class="rounded border border-red-300 bg-red-50 px-3 py-2 text-sm">{{ view.error }}</p>{% endif %}
+  {% if not view.calendar.ok %}
+    <p class="rounded border border-red-300 bg-red-50 px-3 py-2 text-sm"><strong>Calendar not synced.</strong> {{ view.calendar.message }} This plan uses your rules only.</p>
+  {% endif %}
+  {% for warning in view.result.warnings %}
+    <p class="rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm">{{ warning }}</p>
+  {% endfor %}
+  {% for conflict in view.result.conflicts %}
+    <div class="rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm">
+      <p>{{ conflict.message }}</p>
+      {% if conflict.options %}<ul class="list-disc ml-5 mt-1">{% for option in conflict.options %}<li>{{ option }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+  {% endfor %}
+  {% if view.last_diff %}
+    <section class="rounded border border-sky-200 bg-sky-50 px-3 py-2 text-sm">
+      <h2 class="font-medium">What changed</h2>
+      <ul class="list-disc ml-5">{% for change in view.last_diff %}<li>{{ change.text }}</li>{% endfor %}</ul>
+    </section>
+  {% endif %}
+{% endmacro %}
+
+{% macro plan_list(rows, day, allow_drag) %}
+  <ul id="{{ 'today-list' if allow_drag else 'plan-list' }}" class="divide-y divide-stone-200 rounded border border-stone-200 bg-white">
+    {% for entry in rows %}
+    <li data-key="{{ entry.row.item_keys[0] }}" class="px-3 py-2">
+      <div class="flex items-baseline gap-3">
+        {% if allow_drag %}<span class="drag cursor-grab text-stone-400" aria-hidden="true">⠿</span>{% endif %}
+        <span class="font-mono text-sm tabular-nums w-24 shrink-0">{{ time(entry.row.start) }}{% if entry.row.end - entry.row.start > 5 %}–{{ time(entry.row.end) }}{% endif %}</span>
+        <span class="flex-1 min-w-0">{{ entry.row.label }}</span>
+      </div>
+      {% for item in entry['items'] %}
+      <div class="mt-1 ml-0 sm:ml-[7.5rem] flex flex-wrap items-center gap-2 text-xs">
+        {% if entry['items'] | length > 1 %}<span class="text-stone-600">{{ item.label }}</span>{% endif %}
+        {% if item.status == 'proposed' %}<span class="rounded bg-violet-100 text-violet-900 px-1.5">proposed</span>{% endif %}
+        {% if item.status == 'auto' %}<span class="rounded bg-amber-100 text-amber-900 px-1.5">auto</span>{% endif %}
+        {% if item.status == 'done' %}<span class="rounded bg-green-100 text-green-900 px-1.5">done</span>{% endif %}
+        {% if item.status == 'not_done' %}<span class="rounded bg-stone-200 px-1.5">not done</span>{% endif %}
+        {% if item.silent %}<span class="rounded bg-stone-200 px-1.5">silent</span>{% endif %}
+        {% if item.promoted %}<span class="rounded bg-red-100 text-red-900 px-1.5">miss limit reached</span>{% endif %}
+        {% if 'ends_after_sleep' in item.flags %}<span class="rounded bg-red-100 text-red-900 px-1.5">ends after sleep</span>{% endif %}
+        {% if item.tier > 1 %}
+        <form method="post" action="/items/{{ item.key | urlkey }}/alarm" class="contents">
+          <input type="hidden" name="date" value="{{ day }}">
+          {% set alarm = entry.alarms.get(item.key, 'reminder') %}
+          <button name="alarm_mode" value="{{ 'reminder' if alarm == 'alarm' else 'alarm' }}" class="rounded border border-stone-300 px-1.5 hover:bg-stone-100" title="Switch between alarm and reminder">{{ alarm | capitalize }}</button>
+        </form>
+        <form method="post" action="/items/{{ item.key | urlkey }}/status" class="contents">
+          <input type="hidden" name="date" value="{{ day }}">
+          <button name="status" value="done" class="rounded border border-stone-300 px-1.5 hover:bg-stone-100">Done</button>
+          <button name="status" value="not_done" class="rounded border border-stone-300 px-1.5 hover:bg-stone-100">Not done</button>
+          <button name="status" value="skipped_by_user" class="rounded border border-stone-300 px-1.5 hover:bg-stone-100">Skip</button>
+        </form>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </li>
+    {% else %}
+    <li class="px-3 py-4 text-sm text-stone-600">Nothing planned. Describe your routine in <a class="underline" href="/profile">Profile</a>.</li>
+    {% endfor %}
+  </ul>
+{% endmacro %}
+
+{% macro unslotted(view) %}
+  {% if view.result.needs_confirmation %}
+  <section class="space-y-1">
+    <h2 class="font-medium">Not scheduled</h2>
+    {% for label in view.result.needs_confirmation %}
+      <p class="text-sm">{{ label }}: <a class="underline" href="/profile">needs your confirmation</a></p>
+    {% endfor %}
+  </section>
+  {% endif %}
+  {% if view.result.unslotted %}
+  <section class="space-y-2">
+    <h2 class="font-medium">Couldn't place</h2>
+    {% for item in view.result.unslotted %}
+    <div class="rounded border border-stone-200 bg-white px-3 py-2 text-sm">
+      <p>{{ item.message }}</p>
+      <ul class="list-disc ml-5 text-stone-700">{% for rec in item.recommendations %}<li>{{ rec }}</li>{% endfor %}</ul>
+    </div>
+    {% endfor %}
+  </section>
+  {% endif %}
+{% endmacro %}
+
+{% macro approvals_list(approvals) %}
+  {% for row in approvals %}
+  <div class="rounded border border-violet-200 bg-white px-3 py-2 text-sm space-y-2">
+    <p class="font-medium">{{ row.summary }}</p>
+    {% if row.reason %}<p class="text-stone-700">{{ row.reason }}</p>{% endif %}
+    <form method="post" action="/approvals/{{ row.id }}" class="flex flex-wrap gap-2">
+      {% if row.proposed_change.get('id') %}
+      <button name="action" value="approve" class="rounded bg-stone-900 text-white px-2 py-1">Approve: {{ row.proposed_change.get('label') }}</button>
+      {% else %}
+      <button name="action" value="approve" class="rounded bg-stone-900 text-white px-2 py-1">Approve</button>
+      {% endif %}
+      {% if row.kind != 'contradiction' %}
+      <button name="action" value="reject" class="rounded border border-stone-300 px-2 py-1 hover:bg-stone-100">Reject</button>
+      <button name="action" value="always" class="rounded border border-stone-300 px-2 py-1 hover:bg-stone-100">Always</button>
+      {% endif %}
+    </form>
+    {% for alternative in row.alternatives or [] %}
+    <form method="post" action="/approvals/{{ row.id }}">
+      <input type="hidden" name="action" value="pick">
+      <button name="option_id" value="{{ alternative.id }}" class="text-left underline">{{ alternative.label }}</button>
+    </form>
+    {% endfor %}
+  </div>
+  {% endfor %}
+{% endmacro %}

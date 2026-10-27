@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% from "_plan.html" import approvals_list %}
+{% block title %}Profile{% endblock %}
+{% block content %}
+<h1 class="text-xl font-semibold">Setup and profile</h1>
+
+<section class="space-y-2">
+  <h2 class="font-medium">Describe your routine</h2>
+  <form hx-post="/rules/parse" hx-target="#drafts" hx-indicator="#parsing" class="space-y-2">
+    <textarea name="text" rows="4" required class="w-full rounded border border-stone-300 p-2 text-sm" placeholder="Wake up at 7 on weekdays, three meals, medicine twice a day after food, gym 4x a week..."></textarea>
+    <button class="rounded bg-stone-900 text-white px-3 py-1.5 text-sm">Create rule cards</button>
+    <span id="parsing" class="htmx-indicator text-sm text-stone-600">Reading...</span>
+  </form>
+  <div id="drafts" class="space-y-2">{% include "_drafts.html" %}</div>
+</section>
+
+{% if approvals %}
+<section class="space-y-2"><h2 class="font-medium">Contradictions: pick one</h2>{{ approvals_list(approvals) }}</section>
+{% endif %}
+
+{% if conflicts %}
+<section class="space-y-2">
+  <h2 class="font-medium">These rules can never fit</h2>
+  {% for conflict in conflicts %}
+  <div class="rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm">
+    <p>{{ conflict.message }}</p>
+    <ul class="list-disc ml-5">{% for option in conflict.options %}<li>{{ option }}</li>{% endfor %}</ul>
+  </div>
+  {% endfor %}
+</section>
+{% endif %}
+
+{% if questions %}
+<section class="space-y-2">
+  <h2 class="font-medium">A few questions</h2>
+  {% for question in questions %}
+  <form method="post" action="/questions/{{ question.id }}/answer" class="rounded border border-stone-200 bg-white p-3 text-sm space-y-2">
+    <label class="block">{{ question.text }}
+      <input name="answer" required class="mt-1 w-full rounded border border-stone-300 px-2 py-1">
+    </label>
+    <button class="rounded border border-stone-300 px-2 py-1 hover:bg-stone-100">Answer</button>
+  </form>
+  {% endfor %}
+</section>
+{% endif %}
+
+<section class="space-y-2">
+  <h2 class="font-medium">Your rules</h2>
+  <ul class="divide-y divide-stone-200 rounded border border-stone-200 bg-white text-sm">
+    {% for rule in confirmed %}
+    <li class="px-3 py-2 flex flex-wrap items-center gap-2">
+      <span class="flex-1 min-w-0">{{ rule.payload.get('label') or rule.payload.get('item_label') or rule.raw_text }}
+        {% if rule.payload.get('timing_confirmed') == false %}<span class="rounded bg-amber-100 text-amber-900 px-1.5 text-xs">needs your confirmation</span>{% endif %}
+        {% if rule.source == 'ai_suggested' %}<span class="rounded bg-sky-100 text-sky-900 px-1.5 text-xs">AI suggested</span>{% endif %}
+      </span>
+      {% if rule.suggestion and rule.suggestion.get('doses') %}
+      <form method="post" action="/rules/{{ rule.id }}/confirm"><input type="hidden" name="accept_suggestion" value="1"><button class="rounded bg-sky-800 text-white px-2 py-0.5 text-xs">Accept: {{ rule.suggestion.summary }}</button></form>
+      {% endif %}
+      <button hx-delete="/rules/{{ rule.id }}" class="rounded border border-stone-300 px-2 py-0.5 text-xs hover:bg-stone-100">Delete</button>
+    </li>
+    {% else %}<li class="px-3 py-2 text-stone-600">No confirmed rules yet.</li>{% endfor %}
+  </ul>
+</section>
+
+<section class="space-y-2">
+  <h2 class="font-medium">Approval mode</h2>
+  <form method="post" action="/profile/mode" class="flex gap-2 text-sm">
+    <button name="mode" value="restricted" class="rounded px-3 py-1.5 border {{ 'bg-stone-900 text-white border-stone-900' if profile.approval_mode == 'restricted' else 'border-stone-300' }}">Restricted</button>
+    <button name="mode" value="unrestricted" class="rounded px-3 py-1.5 border {{ 'bg-stone-900 text-white border-stone-900' if profile.approval_mode == 'unrestricted' else 'border-stone-300' }}">Unrestricted</button>
+  </form>
+  <p class="text-sm text-stone-600">Unrestricted applies the top proposal for you and logs it with an Undo. Medicine spacing, unconfirmed medicines, skips, contradictions, and your calendar stay protected in both modes.</p>
+</section>
+
+<section class="space-y-2">
+  <h2 class="font-medium">Priority order</h2>
+  <p class="text-sm text-stone-600">Drag to reorder.</p>
+  <ul id="priority-list" class="rounded border border-stone-200 bg-white divide-y divide-stone-200 text-sm">
+    {% for key in profile.priority_order %}<li data-key="{{ key }}" class="cursor-grab px-3 py-2">{{ key | replace('_', ' ') | capitalize }}</li>{% endfor %}
+  </ul>
+</section>
+
+<form method="post" action="/profile/settings" class="space-y-3 rounded border border-stone-200 bg-white p-3 text-sm">
+  <h2 class="font-medium">Times and weights</h2>
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+    {% for name in weekdays %}
+    <label class="flex flex-col">{{ name }} wake-up
+      <input type="time" name="wake_{{ loop.index0 }}" value="{{ profile.default_wake_by_weekday.get(loop.index0 | string, '07:00') }}" class="rounded border border-stone-300 px-2 py-1">
+    </label>
+    {% endfor %}
+    <label class="flex flex-col">Sleep
+      <input type="time" name="sleep_time" value="{{ profile.sleep_time }}" class="rounded border border-stone-300 px-2 py-1">
+    </label>
+    <label class="flex flex-col">Night review
+      <input type="time" name="night_review_time" value="{{ profile.night_review_time }}" class="rounded border border-stone-300 px-2 py-1">
+    </label>
+  </div>
+  <div class="grid sm:grid-cols-2 gap-3">
+    {% for name, value in profile.weights.items() %}
+    <label class="flex flex-col">{{ name | replace('_', ' ') | capitalize }}: {{ value }}
+      <input type="range" name="weight_{{ name }}" min="0" max="200" value="{{ value }}" class="w-full">
+    </label>
+    {% endfor %}
+  </div>
+  <button class="rounded bg-stone-900 text-white px-3 py-1.5">Save</button>
+</form>
+
+<section class="space-y-2">
+  <h2 class="font-medium">Commitments</h2>
+  <ul class="rounded border border-stone-200 bg-white divide-y divide-stone-200 text-sm">
+    {% for row in commitments %}
+    <li class="px-3 py-2 flex flex-wrap items-center gap-2">
+      <span class="flex-1 min-w-0">{{ row.label }}: {{ row.days_of_week | map('string') | join(', ') }}, {{ row.start }} to {{ row.end }}{% if row.location %} at {{ row.location }}{% endif %}, {{ row.commute_minutes }} min commute</span>
+      <form method="post" action="/commitments/{{ row.id }}/delete"><button class="rounded border border-stone-300 px-2 py-0.5 text-xs hover:bg-stone-100">Delete</button></form>
+    </li>
+    {% endfor %}
+  </ul>
+  <form method="post" action="/commitments" class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm">
+    <input name="label" required placeholder="Class" class="rounded border border-stone-300 px-2 py-1">
+    <input name="days" required placeholder="Days, 0 is Monday: 0,2" class="rounded border border-stone-300 px-2 py-1">
+    <input type="time" name="start" required aria-label="Start" class="rounded border border-stone-300 px-2 py-1">
+    <input type="time" name="end" required aria-label="End" class="rounded border border-stone-300 px-2 py-1">
+    <input name="location" placeholder="Location" class="rounded border border-stone-300 px-2 py-1">
+    <input type="number" name="commute_minutes" min="0" value="0" aria-label="Commute minutes" class="rounded border border-stone-300 px-2 py-1">
+    <button class="rounded border border-stone-300 px-3 py-1 hover:bg-stone-100">Add commitment</button>
+  </form>
+</section>
+
+<section class="space-y-2">
+  <h2 class="font-medium">Food options</h2>
+  <ul class="rounded border border-stone-200 bg-white divide-y divide-stone-200 text-sm">
+    {% for row in foods %}
+    <li class="px-3 py-2 flex items-center gap-2">
+      <span class="flex-1 min-w-0">{{ row.label }}, {{ row.duration_minutes }} min{% if row.allowed_during_busy %}, OK during class or meetings{% endif %}</span>
+      <form method="post" action="/foods/{{ row.id }}/delete"><button class="rounded border border-stone-300 px-2 py-0.5 text-xs hover:bg-stone-100">Delete</button></form>
+    </li>
+    {% endfor %}
+  </ul>
+  <form method="post" action="/foods" class="flex flex-wrap items-center gap-2 text-sm">
+    <input name="label" required placeholder="Apple" class="rounded border border-stone-300 px-2 py-1">
+    <input type="number" name="duration_minutes" min="1" value="1" aria-label="Minutes" class="w-20 rounded border border-stone-300 px-2 py-1">
+    <label class="flex items-center gap-1"><input type="checkbox" name="allowed_during_busy" value="1"> OK during busy time</label>
+    <button class="rounded border border-stone-300 px-3 py-1 hover:bg-stone-100">Add food</button>
+  </form>
+</section>
+
+<section class="space-y-2">
+  <h2 class="font-medium">Quotas</h2>
+  <ul class="rounded border border-stone-200 bg-white divide-y divide-stone-200 text-sm">
+    {% for row in quotas %}
+    <li class="px-3 py-2 flex items-center gap-2">
+      <span class="flex-1 min-w-0">{{ row.item_label }}: {{ row.target_per_week }} a week, at most {{ row.max_misses_per_month }} missed a month</span>
+      <form method="post" action="/quotas/{{ row.id }}/delete"><button class="rounded border border-stone-300 px-2 py-0.5 text-xs hover:bg-stone-100">Delete</button></form>
+    </li>
+    {% else %}<li class="px-3 py-2 text-stone-600">Describe a goal above, such as "gym 4x a week".</li>{% endfor %}
+  </ul>
+</section>
+
+<section class="space-y-1 text-sm">
+  <h2 class="font-medium">Calendar</h2>
+  <p class="text-stone-600">Read through an MCP server, never written to. <a class="underline" href="/calendar/status" hx-boost="false">Check status</a></p>
+</section>
+{% endblock %}

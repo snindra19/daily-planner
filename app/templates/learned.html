@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Learned{% endblock %}
+{% block content %}
+<header class="flex flex-wrap items-center justify-between gap-2">
+  <h1 class="text-xl font-semibold">Learned preferences</h1>
+  <form method="post" action="/learned/analyze"><button class="rounded border border-stone-300 px-3 py-1.5 text-sm hover:bg-stone-100">Look for patterns now</button></form>
+</header>
+<ul class="rounded border border-stone-200 bg-white divide-y divide-stone-200 text-sm">
+  {% for pref in prefs %}
+  <li class="px-3 py-2 flex flex-wrap items-center gap-2">
+    <div class="flex-1 min-w-0">
+      <p>{{ pref.description }}</p>
+      <p class="text-stone-600">{{ (pref.consistency * pref.evidence_count) | round | int }} of {{ pref.evidence_count }} times. {{ pref.status | capitalize }}.</p>
+    </div>
+    <form method="post" action="/learned/{{ pref.id }}" class="flex gap-2">
+      {% if pref.status != 'active' %}<button name="action" value="accept" class="rounded bg-stone-900 text-white px-2 py-1">Accept</button>{% endif %}
+      {% if pref.status != 'revoked' %}<button name="action" value="revoke" class="rounded border border-stone-300 px-2 py-1 hover:bg-stone-100">Revoke</button>{% endif %}
+    </form>
+  </li>
+  {% else %}<li class="px-3 py-3 text-stone-600">Nothing yet. A pattern needs at least 3 matching decisions at 80% consistency.</li>{% endfor %}
+</ul>
+{% endblock %}

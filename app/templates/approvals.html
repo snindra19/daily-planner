@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% from "_plan.html" import approvals_list %}
+{% block title %}Approvals{% endblock %}
+{% block content %}
+<h1 class="text-xl font-semibold">Approvals</h1>
+<section class="space-y-2">
+  {{ approvals_list(approvals) }}
+  {% if not approvals %}<p class="text-sm text-stone-600">Nothing is waiting for you.</p>{% endif %}
+</section>
+<section class="space-y-2">
+  <h2 class="font-medium">Standing approvals</h2>
+  <ul class="rounded border border-stone-200 bg-white divide-y divide-stone-200 text-sm">
+    {% for row in standing %}
+    <li class="px-3 py-2 flex flex-wrap items-center gap-2">
+      <span class="flex-1 min-w-0 font-mono text-xs break-words">{{ row.match | tojson }}</span>
+      <form method="post" action="/standing/{{ row.id }}/revoke"><button class="rounded border border-stone-300 px-2 py-0.5 text-xs hover:bg-stone-100">Revoke</button></form>
+    </li>
+    {% else %}<li class="px-3 py-2 text-stone-600">None yet. Choose Always on a proposal to add one.</li>{% endfor %}
+  </ul>
+</section>
+{% endblock %}

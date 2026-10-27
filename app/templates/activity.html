@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Activity{% endblock %}
+{% block content %}
+<h1 class="text-xl font-semibold">Activity log</h1>
+<ul class="rounded border border-stone-200 bg-white divide-y divide-stone-200 text-sm">
+  {% for entry in entries %}
+  <li class="px-3 py-2 space-y-1">
+    <div class="flex flex-wrap items-center gap-2">
+      <span class="rounded bg-amber-100 text-amber-900 px-1.5 text-xs">{{ entry.applied_by }}</span>
+      <span class="flex-1 min-w-0">{{ entry.date }}: {{ entry.change.get('label') }}</span>
+      {% if entry.undone %}<span class="text-xs text-stone-600">Undone</span>
+      {% elif entry.change.get('key') %}
+      <form method="post" action="/activity/{{ entry.id }}/undo"><button class="rounded border border-stone-300 px-2 py-0.5 text-xs hover:bg-stone-100">Undo</button></form>
+      {% endif %}
+    </div>
+    <p class="text-stone-700">{{ entry.reason }}</p>
+    {% if entry.alternatives %}<p class="text-stone-600">Alternatives: {{ entry.alternatives | join('; ') }}</p>{% endif %}
+  </li>
+  {% else %}<li class="px-3 py-3 text-stone-600">No automatic changes yet.</li>{% endfor %}
+</ul>
+{% endblock %}

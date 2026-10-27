@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% from "_plan.html" import banners, plan_list, unslotted, approvals_list %}
+{% block title %}Tomorrow{% endblock %}
+{% block content %}
+<h1 class="text-xl font-semibold">Tomorrow</h1>
+
+<form method="post" action="/wake" class="rounded border border-stone-200 bg-white p-3 flex flex-wrap items-end gap-2 text-sm">
+  <input type="hidden" name="date" value="{{ day }}">
+  <input type="hidden" name="kind" value="target">
+  <label class="flex flex-col font-medium">When do you want to wake up tomorrow?
+    <input type="time" name="time" required value="{{ target or view.wake }}" class="rounded border border-stone-300 px-2 py-1 font-normal">
+  </label>
+  <button class="rounded bg-stone-900 text-white px-3 py-1.5">Save</button>
+  <p class="w-full text-stone-600">{{ day }}. Planning from {{ view.wake }} ({{ view.wake_level }}).</p>
+</form>
+
+{{ banners(view) }}
+
+{% for title in view.result.surfaced_events %}
+<p class="text-sm text-stone-700">Also tomorrow: {{ title }}</p>
+{% endfor %}
+
+{% if approvals %}
+<section class="space-y-2">
+  <h2 class="font-medium">Proposals</h2>
+  {{ approvals_list(approvals) }}
+</section>
+{% endif %}
+
+<section class="space-y-2">
+  <h2 class="font-medium">Tomorrow's list</h2>
+  {{ plan_list(rows, day, false) }}
+</section>
+
+{{ unslotted(view) }}
+
+<section class="space-y-2">
+  <h2 class="font-medium">Anything else for tomorrow?</h2>
+  <form method="post" action="/tomorrow/extra" class="flex gap-2">
+    <input name="text" required class="flex-1 min-w-0 rounded border border-stone-300 px-2 py-1 text-sm" placeholder="Submit assignment before class">
+    <button class="rounded bg-stone-900 text-white px-3 py-1.5 text-sm">Add</button>
+  </form>
+  {% for rule in drafts %}
+  <div class="rounded border border-stone-200 bg-white px-3 py-2 text-sm flex flex-wrap items-center gap-2">
+    <span class="flex-1 min-w-0">{{ rule.payload.get('label') or rule.raw_text }}</span>
+    <form method="post" action="/rules/{{ rule.id }}/confirm"><button class="rounded bg-stone-900 text-white px-2 py-1">Confirm</button></form>
+  </div>
+  {% endfor %}
+</section>
+
+<section class="flex flex-wrap items-center gap-3 border-t border-stone-200 pt-4 text-sm">
+  <form method="post" action="/tomorrow/signoff">
+    <button class="rounded bg-stone-900 text-white px-3 py-1.5" {% if reviewed %}disabled{% endif %}>{{ 'Signed off' if reviewed else 'Sign off' }}</button>
+  </form>
+  {% if global_mode == 'unrestricted' %}
+  <form method="post" action="/profile/mode">
+    <input type="hidden" name="date" value="{{ day }}">
+    {% if mode == 'restricted' %}
+    <button name="mode" value="" class="underline">Use Unrestricted tomorrow again</button>
+    {% else %}
+    <button name="mode" value="restricted" class="underline">Restricted just for tomorrow</button>
+    {% endif %}
+  </form>
+  {% endif %}
+</section>
+{% endblock %}

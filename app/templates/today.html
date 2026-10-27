@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% from "_plan.html" import banners, plan_list, unslotted, approvals_list %}
+{% block title %}Today{% endblock %}
+{% block content %}
+<header class="flex flex-wrap items-end justify-between gap-3">
+  <div>
+    <h1 class="text-xl font-semibold">Today</h1>
+    <p class="text-sm text-stone-600">{{ day }}. Wake-up {{ view.wake }} ({{ view.wake_level }}).</p>
+  </div>
+  <div class="flex flex-wrap items-end gap-2">
+    <form method="post" action="/wake" class="flex items-end gap-2 text-sm">
+      <input type="hidden" name="date" value="{{ day }}">
+      <input type="hidden" name="kind" value="actual">
+      <label class="flex flex-col">I woke up at
+        <input type="time" name="time" required value="{{ view.wake }}" class="rounded border border-stone-300 px-2 py-1">
+      </label>
+      <button class="rounded bg-stone-900 text-white px-3 py-1.5">Save</button>
+    </form>
+    <form method="post" action="/calendar/refresh">
+      <button class="rounded border border-stone-300 px-3 py-1.5 text-sm hover:bg-stone-100">Refresh calendar</button>
+    </form>
+  </div>
+</header>
+
+{% if review_banner %}
+<p class="rounded border border-sky-200 bg-sky-50 px-3 py-2 text-sm">Tomorrow isn't reviewed yet. <a class="underline" href="/tomorrow">Review it now</a>.</p>
+{% endif %}
+
+{% if skip_message %}
+<div class="rounded border border-red-300 bg-red-50 px-3 py-2 text-sm">
+  <p>{{ skip_message }}</p>
+  <form method="post" action="/items/{{ skip_warn | urlkey }}/status" class="mt-2 flex gap-2">
+    <input type="hidden" name="date" value="{{ day }}">
+    <input type="hidden" name="confirm" value="yes">
+    <button name="status" value="skipped_by_user" class="rounded bg-red-700 text-white px-2 py-1">Skip anyway</button>
+    <a href="/" class="rounded border border-stone-300 px-2 py-1">Keep it</a>
+  </form>
+</div>
+{% endif %}
+
+{{ banners(view) }}
+
+{% if view.result.late_open.needed %}
+<section class="rounded border border-amber-300 bg-amber-50 p-3 space-y-3">
+  <h2 class="font-medium">It's {{ now_hhmm }} and these earlier items are still open</h2>
+  <form method="post" action="/late/override">
+    <button class="rounded bg-stone-900 text-white px-3 py-1.5 text-sm">Override: restart the day at {{ now_hhmm }}</button>
+  </form>
+  <form method="post" action="/late/continue" id="late-form" class="space-y-2">
+    <p class="text-sm">Or Continue: drag each item to the right list. Only Not done items are re-planned.</p>
+    <input type="hidden" name="done"><input type="hidden" name="not_done">
+    <div class="grid sm:grid-cols-2 gap-3 text-sm">
+      <div><h3 class="font-medium mb-1">Not done</h3>
+        <ul id="late-not_done" class="late-list min-h-10 rounded border border-stone-300 bg-white p-1 space-y-1">
+          {% for item in late_items %}<li data-key="{{ item.key }}" class="cursor-grab rounded bg-stone-100 px-2 py-1">{{ item.label }}</li>{% endfor %}
+        </ul>
+      </div>
+      <div><h3 class="font-medium mb-1">Done</h3>
+        <ul id="late-done" class="late-list min-h-10 rounded border border-stone-300 bg-white p-1 space-y-1"></ul>
+      </div>
+    </div>
+    <button class="rounded border border-stone-400 px-3 py-1.5 text-sm hover:bg-white">Continue</button>
+  </form>
+</section>
+{% endif %}
+
+{% if approvals %}
+<section class="space-y-2">
+  <h2 class="font-medium">Waiting for you</h2>
+  {{ approvals_list(approvals) }}
+</section>
+{% endif %}
+
+<section class="space-y-2">
+  <h2 class="font-medium">Your day</h2>
+  {{ plan_list(rows, day, true) }}
+</section>
+
+{{ unslotted(view) }}
+{% endblock %}
