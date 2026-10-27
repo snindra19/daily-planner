@@ -1,0 +1,25 @@
+{
+  "date": "2026-11-02",
+  "wake": "07:00",
+  "weights": {"per_minute_delay": 1, "during_busy": 60, "meal_downgraded": 20},
+  "rules": [
+    {"type": "event", "id": "breakfast", "label": "Breakfast", "category": "meal",
+     "anchor": {"ref": "wake_up"}, "offset_minutes": 60, "duration_minutes": 20},
+    {"type": "event", "id": "medicine_1", "label": "Medicine 1", "category": "medicine",
+     "anchor": {"ref": "event", "id": "breakfast"}, "after_end": true, "requires_food": true,
+     "food_source_ref": "breakfast", "allowed_during_busy": true},
+    {"type": "event", "id": "lunch", "label": "Lunch", "category": "meal",
+     "anchor": {"ref": "event", "id": "breakfast"}, "offset_minutes": 240, "duration_minutes": 30, "skippable": true},
+    {"type": "event", "id": "medicine_2", "label": "Medicine 2", "category": "medicine",
+     "anchor": {"ref": "event", "id": "lunch"}, "after_end": true, "requires_food": true,
+     "food_source_ref": "lunch", "tolerance_minutes": 120, "allowed_during_busy": true}
+  ],
+  "food_options": [
+    {"id": "snack", "label": "Snack", "duration_minutes": 15},
+    {"id": "apple", "label": "Apple", "duration_minutes": 1, "allowed_during_busy": true}
+  ],
+  "calendar_events": [
+    {"source_id": "meeting", "title": "Project meeting", "start": "2026-11-02T11:00:00",
+     "end": "2026-11-02T14:00:00", "classified_as": "meeting"}
+  ]
+}

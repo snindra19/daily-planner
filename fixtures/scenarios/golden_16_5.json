@@ -1,0 +1,51 @@
+{
+  "date": "2026-11-02",
+  "wake": "08:00",
+  "sleep_time": "23:00",
+  "weights": {"per_minute_delay": 1, "during_busy": 60, "meal_downgraded": 20},
+  "rules": [
+    {"type": "event", "id": "breakfast", "label": "Breakfast", "category": "meal",
+     "anchor": {"ref": "wake_up"}, "offset_minutes": 60, "duration_minutes": 20},
+    {"type": "event", "id": "medicine_1", "label": "Medicine 1", "category": "medicine",
+     "anchor": {"ref": "event", "id": "breakfast"}, "after_end": true, "requires_food": true,
+     "food_source_ref": "breakfast", "min_gap_minutes": 240, "dose_group": "meds", "allowed_during_busy": true},
+    {"type": "event", "id": "lunch", "label": "Lunch", "category": "meal",
+     "anchor": {"ref": "event", "id": "breakfast"}, "offset_minutes": 240, "duration_minutes": 30, "skippable": true},
+    {"type": "event", "id": "medicine_2", "label": "Medicine 2", "category": "medicine",
+     "anchor": {"ref": "event", "id": "lunch"}, "after_end": true, "requires_food": true,
+     "food_source_ref": "lunch", "min_gap_minutes": 240, "dose_group": "meds", "allowed_during_busy": true},
+    {"type": "event", "id": "dinner", "label": "Dinner", "category": "meal",
+     "anchor": {"ref": "absolute", "time": "19:00"}, "duration_minutes": 30},
+    {"type": "event", "id": "medicine_3", "label": "Medicine 3", "category": "medicine",
+     "anchor": {"ref": "event", "id": "dinner"}, "after_end": true, "requires_food": true,
+     "food_source_ref": "dinner", "min_gap_minutes": 240, "dose_group": "meds", "allowed_during_busy": true},
+    {"type": "event", "id": "gym", "label": "Gym", "category": "quota", "duration_minutes": 60, "location": "home"},
+    {"type": "event", "id": "yoga", "label": "Yoga", "category": "low_priority", "duration_minutes": 20}
+  ],
+  "commitments": [
+    {"id": "class_am", "label": "Class", "days_of_week": [0], "start": "10:00", "end": "14:00",
+     "location": "Campus", "commute_minutes": 35},
+    {"id": "class_pm", "label": "Class", "days_of_week": [0], "start": "16:00", "end": "18:00",
+     "location": "Campus", "commute_minutes": 35}
+  ],
+  "food_options": [
+    {"id": "apple", "label": "Apple", "duration_minutes": 1, "allowed_during_busy": true}
+  ],
+  "quotas": [
+    {"item_label": "Gym", "target_per_week": 4, "max_misses_per_month": 1}
+  ],
+  "expected_rows": [
+    ["09:00", "Breakfast"],
+    ["09:20", "Medicine 1"],
+    ["09:25", "Leave for Class"],
+    ["10:00", "Class"],
+    ["14:00", "Lunch"],
+    ["14:30", "Medicine 2"],
+    ["16:00", "Class"],
+    ["18:00", "Leave for home, arrive 18:35"],
+    ["19:00", "Dinner"],
+    ["19:30", "Gym"],
+    ["19:30", "Medicine 3"],
+    ["20:30", "Yoga"]
+  ]
+}

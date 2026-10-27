@@ -1,0 +1,33 @@
+{
+  "date": "2026-11-02",
+  "wake": "07:00",
+  "rules": [
+    {"type": "event", "id": "hygiene", "label": "Brush, bath, washroom", "category": "routine",
+     "anchor": {"ref": "wake_up"}, "offset_minutes": 15, "duration_minutes": 30},
+    {"type": "event", "id": "breakfast", "label": "Breakfast", "category": "meal",
+     "anchor": {"ref": "wake_up"}, "offset_minutes": 60, "duration_minutes": 20},
+    {"type": "event", "id": "anchor_meds", "label": "Eye drops + medicines (anchor)", "category": "medicine",
+     "anchor": {"ref": "wake_up"}, "offset_minutes": 90, "duration_minutes": 1, "allowed_during_busy": true},
+    {"type": "series", "id": "eye_drops", "label": "Eye drops", "category": "medicine",
+     "anchor": {"ref": "event", "id": "anchor_meds"},
+     "recurrence": {"interval_minutes": 180, "count": 3}, "allowed_during_busy": true},
+    {"type": "series", "id": "meds_series", "label": "Medicine", "category": "medicine",
+     "anchor": {"ref": "event", "id": "anchor_meds"},
+     "recurrence": {"interval_minutes": 360, "count": 2}, "allowed_during_busy": true},
+    {"type": "event", "id": "dinner", "label": "Dinner", "category": "meal",
+     "anchor": {"ref": "occurrence", "id": "meds_series", "selector": "last"}, "offset_minutes": -60},
+    {"type": "event", "id": "lunch", "label": "Lunch", "category": "meal",
+     "anchor": {"ref": "occurrence", "id": "meds_series", "selector": "first"}, "offset_minutes": -60}
+  ],
+  "expected_rows": [
+    ["07:15", "Brush, bath, washroom"],
+    ["08:00", "Breakfast"],
+    ["08:30", "Eye drops + medicines (anchor)"],
+    ["11:30", "Eye drops 1/3"],
+    ["13:30", "Lunch"],
+    ["14:30", "Eye drops 2/3 + Medicine 1/2"],
+    ["17:30", "Eye drops 3/3"],
+    ["19:30", "Dinner"],
+    ["20:30", "Medicine 2/2"]
+  ]
+}
