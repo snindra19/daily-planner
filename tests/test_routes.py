@@ -143,7 +143,7 @@ def test_add_commitment_and_food(client: TestClient) -> None:
     page = client.get("/profile").text
     assert "Class: 0, 10:00 to 14:00" in page
     assert "Apple, 1 min" in page
-    assert "Leave for Class" in client.get("/").text
+    assert "Leave for class" in client.get("/").text
 
 
 def test_delete_warns_about_dependents(client: TestClient, session: Session) -> None:

@@ -336,7 +336,10 @@ class _Planner:
             self.day.away.append((start, end))
             return
         self._add_commute(
-            f"commitment:{first.id}:leave", f"Leave for {first.label}", start - commute, start
+            f"commitment:{first.id}:leave",
+            f"Leave for {first.label.lower()}",
+            start - commute,
+            start,
         )
         self._add_commute(
             f"commitment:{last.id}:return",
@@ -760,13 +763,16 @@ class _Planner:
                 breakdown={"during_busy": self.weights.get("during_busy", 60)},
                 placements={item.key: {"start": item.start, "end": item.end, "silent": True}},
             ))  # fmt: skip
-        delay = block.end - item.start
+        after = block.end
+        while (next_block := self.day.block_at(after, after + duration)) is not None:
+            after = next_block.end
+        delay = after - item.start
         options.append(Option(
             id="after",
-            label=f"Take {item.label} right after {block.label} at {to_hhmm(block.end)}",
+            label=f"Take {item.label} right after {block.label} at {to_hhmm(after)}",
             score=delay * self.weights.get("per_minute_delay", 1),
             breakdown={"delay": delay * self.weights.get("per_minute_delay", 1)},
-            placements={item.key: {"start": block.end, "end": block.end + duration, "silent": False}},
+            placements={item.key: {"start": after, "end": after + duration, "silent": False}},
         ))  # fmt: skip
         options.sort(key=lambda o: (o.score, o.placements[item.key]["start"], o.id))
         proposal = Proposal(
@@ -1102,7 +1108,7 @@ def _build_rows(items: list[PlanItem]) -> list[PlanRow]:
             rows.append(
                 PlanRow(start=item.start, end=item.end, label=item.label, item_keys=[item.key])
             )
-    return sorted(rows, key=lambda r: (r.start, r.item_keys[0]))
+    return sorted(rows, key=lambda r: r.start)
 
 
 __all__ = ["build_plan", "Conflict"]

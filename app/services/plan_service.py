@@ -166,7 +166,7 @@ def _inputs(db: Session, day: Date) -> dict[str, Any]:
         ],
         "food_options": [
             FoodOption(
-                id=str(f.id),
+                id=slugify(f.label),
                 label=f.label,
                 duration_minutes=f.duration_minutes,
                 allowed_during_busy=f.allowed_during_busy,

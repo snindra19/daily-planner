@@ -37,15 +37,15 @@
   "expected_rows": [
     ["09:00", "Breakfast"],
     ["09:20", "Medicine 1"],
-    ["09:25", "Leave for Class"],
+    ["09:25", "Leave for class"],
     ["10:00", "Class"],
     ["14:00", "Lunch"],
     ["14:30", "Medicine 2"],
     ["16:00", "Class"],
     ["18:00", "Leave for home, arrive 18:35"],
     ["19:00", "Dinner"],
-    ["19:30", "Gym"],
     ["19:30", "Medicine 3"],
+    ["19:30", "Gym"],
     ["20:30", "Yoga"]
   ]
 }
