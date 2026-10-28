@@ -13,6 +13,7 @@ Rules for each payload type:
 - `day_override`: a change for one date, such as "no class tomorrow afternoon" (`no_commitments_after`).
 
 Other rules:
+- Every meal needs an anchor. When the user gives no time for a meal, draft these typical anchors, set `confidence` to 0.6, and put a `needs_clarification` question asking if the time is right: breakfast `wake_up` with `offset_minutes` 60 and 20 minutes long; lunch `event` on `breakfast` with `offset_minutes` 240 and 30 minutes long; dinner `absolute` at 19:00 and 30 minutes long. Mark meals `skippable: true` unless the user says otherwise.
 - Never invent medicine timing. When the user does not say which meals or what spacing, emit the medicine with `timing_confirmed: false`. For "take X twice a day after food" with no meals named, use `requires_food: true` and `timing_confirmed: false`.
 - For a one-off task with a deadline such as "submit assignment before class", use category `task`, no anchor, and `before_first_commitment: true` or `deadline`.
 - Use `needs_clarification` for a question when a rule is ambiguous, and lower `confidence` to match.

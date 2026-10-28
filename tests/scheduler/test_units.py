@@ -134,6 +134,24 @@ def test_unconfirmed_medicine_is_not_scheduled() -> None:
     assert result.needs_confirmation == ["New_Med"]
 
 
+def test_rule_with_no_time_is_listed_not_dropped() -> None:
+    rules = [
+        event("lunch", category="meal", duration_minutes=30),
+        event(
+            "pill",
+            category="medicine",
+            anchor={"ref": "event", "id": "lunch"},
+            after_end=True,
+        ),
+    ]
+    result = plan({"date": DAY, "wake": "08:00", "rules": rules})
+    listed = {u.key: u for u in result.unslotted}
+    assert listed["lunch"].message == "Lunch has no time yet."
+    assert "pill" in listed
+    assert result.item("lunch") is None
+    assert result.item("pill") is None
+
+
 def test_quota_counts_week_and_month() -> None:
     quota = Quota(item_label="Gym", target_per_week=2, max_misses_per_month=1)
     history = [

@@ -1,3 +1,3 @@
 A person added a medicine without saying when to take it. Suggest which meals to take it after and the spacing between doses. This is labeled as a suggestion, and the medicine is not scheduled until the user confirms it, ideally after checking with their doctor.
 
-Use the dose count the user gave. Set `doses[].after` to a meal rule id such as `breakfast` or `dinner`, taken from `context.confirmed_rules` when those rules exist. Spread doses across the day. Do not recommend a medical dosage.
+Use the dose count stated in `context.user_text`: "twice a day" means exactly two entries in `doses`. Assume one dose only when the text gives no count. Set each `doses[].after` to the `id` of a meal rule from `context.confirmed_rules` or `context.draft_rules`, and use no other ids. Spread doses across the day. Do not recommend a medical dosage.

@@ -246,6 +246,7 @@ class _Planner:
         self._place_medicines()
         self._place_tasks()
         self._place_flexible()
+        self._report_rules_without_a_time()
         self._flag_sleep()
         self._finish()
         return self.result
@@ -1118,6 +1119,32 @@ class _Planner:
         )
 
     # Steps 10 to 12: finish
+
+    def _report_rules_without_a_time(self) -> None:
+        """Step 11: nothing is dropped silently, including rules the scheduler cannot time."""
+        for rule in self.rules:
+            if (
+                isinstance(rule, EventRule)
+                and rule.anchor is None
+                and rule.category in ("meal", "medicine", "routine")
+                and rule.id not in self.overrides
+                and not self._skipped(rule.id)
+            ):
+                self._unslot(
+                    rule.id,
+                    rule.label,
+                    rule.duration_minutes,
+                    f"{rule.label} has no time yet.",
+                    ["Give it a time", "Delete this rule"],
+                )
+        for rule in self.unresolved:
+            self._unslot(
+                rule.id,
+                rule.label,
+                rule.duration_minutes,
+                f"{rule.label} could not be placed: it depends on something with no time.",
+                ["Give that item a time", "Delete this rule"],
+            )
 
     def _finish(self) -> None:
         for rule in self.unresolved:

@@ -43,9 +43,15 @@ def prep(client: LLMClient, events: list[dict[str, Any]], context: dict[str, Any
     return call_structured(client, "prep", PrepResult, {"events": events}, context)
 
 
-def medicine(client: LLMClient, label: str, rules: list[dict[str, Any]]) -> MedicineSuggestion:
-    """Suggest timing for a medicine that has none."""
-    context = {"confirmed_rules": rules}
+def medicine(
+    client: LLMClient,
+    label: str,
+    rules: list[dict[str, Any]],
+    user_text: str = "",
+    draft_rules: list[dict[str, Any]] | None = None,
+) -> MedicineSuggestion:
+    """Suggest timing for a medicine that has none, from what the user actually said."""
+    context = {"user_text": user_text, "confirmed_rules": rules, "draft_rules": draft_rules or []}
     return call_structured(client, "medicine", MedicineSuggestion, {"label": label}, context)
 
 

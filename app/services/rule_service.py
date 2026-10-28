@@ -56,21 +56,28 @@ def parse_text(db: Session, text: str, llm: LLMClient, only_date: str | None = N
         drafts.append(rule)
     db.flush()
     for rule in drafts:
-        _attach_suggestion(db, rule, llm)
+        _attach_suggestion(db, rule, llm, text, drafts)
     _generate_questions(db, text, drafts, llm)
     db.commit()
     return drafts
 
 
-def _attach_suggestion(db: Session, rule: Rule, llm: LLMClient) -> None:
+def _attach_suggestion(
+    db: Session, rule: Rule, llm: LLMClient, text: str, drafts: list[Rule]
+) -> None:
+    """Suggest timing from the user's words. A suggestion naming an unknown meal is dropped."""
     payload = rule.payload
     if payload.get("category") != "medicine" or payload.get("timing_confirmed", True):
         return
+    confirmed = _confirmed_context(db)
+    draft_payloads = [d.payload for d in drafts]
     try:
-        suggestion = tasks.medicine(llm, payload["label"], _confirmed_context(db))
+        suggestion = tasks.medicine(llm, payload["label"], confirmed, text, draft_payloads)
     except LLMError:
         return
-    rule.suggestion = suggestion.model_dump()
+    meals = {p.get("id") for p in [*confirmed, *draft_payloads] if p.get("category") == "meal"}
+    if all(dose.after in meals for dose in suggestion.doses):
+        rule.suggestion = suggestion.model_dump()
 
 
 def _generate_questions(db: Session, text: str, drafts: list[Rule], llm: LLMClient) -> None:
